@@ -1,0 +1,206 @@
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="bi bi-person"></i> {{child.name}} {{child.last_name}}</h2>
+                <div class="btn-group" role="group">
+                    <a href="/children/{{child.id}}/edit" class="btn btn-outline-secondary">
+                        <i class="bi bi-pencil"></i> Editar
+                    </a>
+                    <a href="/observations/add?child_id={{child.id}}" class="btn btn-primary">
+                        <i class="bi bi-plus-circle"></i> Nueva Observación
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{#if success}}
+    <div class="alert alert-success" role="alert">
+        <i class="bi bi-check-circle"></i> {{success}}
+    </div>
+    {{/if}}
+
+    <div class="row">
+        <!-- Información del niño -->
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="bi bi-info-circle"></i> Información Personal</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <strong>Nombre Completo:</strong><br>
+                        {{child.name}} {{child.last_name}}
+                    </div>
+                    
+                    {{#if child.age}}
+                    <div class="mb-3">
+                        <strong>Edad:</strong><br>
+                        {{child.age}} años
+                    </div>
+                    {{/if}}
+
+                    {{#if child.birthdate}}
+                    <div class="mb-3">
+                        <strong>Fecha de Nacimiento:</strong><br>
+                        {{formatDate child.birthdate}}
+                    </div>
+                    {{/if}}
+
+                    {{#if child.group_name}}
+                    <div class="mb-3">
+                        <strong>Grupo/Clase:</strong><br>
+                        {{child.group_name}}
+                    </div>
+                    {{/if}}
+
+                    {{#if child.special_needs}}
+                    <div class="mb-3">
+                        <strong>Necesidades Especiales:</strong><br>
+                        <div class="alert alert-info p-2">
+                            {{child.special_needs}}
+                        </div>
+                    </div>
+                    {{/if}}
+
+                    {{#if child.notes}}
+                    <div class="mb-3">
+                        <strong>Notas:</strong><br>
+                        {{child.notes}}
+                    </div>
+                    {{/if}}
+                </div>
+            </div>
+
+            <!-- Información de contacto -->
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h5><i class="bi bi-telephone"></i> Información de Contacto</h5>
+                </div>
+                <div class="card-body">
+                    {{#if child.parent_name}}
+                    <div class="mb-3">
+                        <strong>Padre/Tutor:</strong><br>
+                        {{child.parent_name}}
+                    </div>
+                    {{/if}}
+
+                    {{#if child.parent_phone}}
+                    <div class="mb-3">
+                        <strong>Teléfono:</strong><br>
+                        <a href="tel:{{child.parent_phone}}">{{child.parent_phone}}</a>
+                    </div>
+                    {{/if}}
+
+                    {{#if child.parent_email}}
+                    <div class="mb-3">
+                        <strong>Email:</strong><br>
+                        <a href="mailto:{{child.parent_email}}">{{child.parent_email}}</a>
+                    </div>
+                    {{/if}}
+
+                    {{#if child.emergency_contact}}
+                    <div class="mb-3">
+                        <strong>Contacto de Emergencia:</strong><br>
+                        {{child.emergency_contact}}
+                    </div>
+                    {{/if}}
+                </div>
+            </div>
+        </div>
+
+        <!-- Observaciones -->
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5><i class="bi bi-eye"></i> Historial de Observaciones</h5>
+                    <span class="badge bg-primary">{{observations.length}} registros</span>
+                </div>
+                <div class="card-body">
+                    {{#if observations}}
+                    <div class="timeline">
+                        {{#each observations}}
+                        <div class="timeline-item">
+                            <div class="timeline-marker">
+                                <i class="bi bi-circle-fill"></i>
+                            </div>
+                            <div class="timeline-content">
+                                <div class="d-flex justify-content-between">
+                                    <h6>{{formatDate this.observation_date}}</h6>
+                                    <small class="text-muted">{{this.observer_name}}</small>
+                                </div>
+                                
+                                <!-- Tipos de observación -->
+                                <div class="mb-2">
+                                    {{#if this.observation_types}}
+                                    {{#each (JSON.parse this.observation_types)}}
+                                    <span class="badge bg-secondary me-1">{{this}}</span>
+                                    {{/each}}
+                                    {{/if}}
+                                </div>
+
+                                <!-- Descripción -->
+                                <p>{{this.description}}</p>
+
+                                <!-- Etiquetas -->
+                                {{#if this.tags}}
+                                <div class="mb-2">
+                                    {{#each (JSON.parse this.tags)}}
+                                    <span class="badge {{#if (eq this 'Positivo')}}bg-success{{else if (eq this 'Alerta')}}bg-danger{{else}}bg-warning{{/if}} me-1">
+                                        {{this}}
+                                    </span>
+                                    {{/each}}
+                                </div>
+                                {{/if}}
+
+                                <!-- Acciones -->
+                                <div class="row text-center">
+                                    <div class="col-3">
+                                        <small class="text-muted">Conversó</small><br>
+                                        <i class="bi {{#if this.talked_with_child}}bi-check-circle text-success{{else}}bi-x-circle text-muted{{/if}}"></i>
+                                    </div>
+                                    <div class="col-3">
+                                        <small class="text-muted">Oró</small><br>
+                                        <i class="bi {{#if this.prayed_for_issue}}bi-check-circle text-success{{else}}bi-x-circle text-muted{{/if}}"></i>
+                                    </div>
+                                    <div class="col-3">
+                                        <small class="text-muted">Notificó</small><br>
+                                        <i class="bi {{#if this.notified_parents}}bi-check-circle text-success{{else}}bi-x-circle text-muted{{/if}}"></i>
+                                    </div>
+                                    <div class="col-3">
+                                        <small class="text-muted">Seguimiento</small><br>
+                                        <i class="bi {{#if this.requires_followup}}bi-check-circle text-warning{{else}}bi-x-circle text-muted{{/if}}"></i>
+                                    </div>
+                                </div>
+
+                                {{#if this.additional_comments}}
+                                <div class="mt-2">
+                                    <small><strong>Comentarios adicionales:</strong> {{this.additional_comments}}</small>
+                                </div>
+                                {{/if}}
+                            </div>
+                        </div>
+                        {{/each}}
+                    </div>
+                    {{else}}
+                    <div class="text-center text-muted py-4">
+                        <i class="bi bi-journal fs-1"></i>
+                        <h5>No hay observaciones registradas</h5>
+                        <p>Comienza registrando la primera observación para este niño</p>
+                        <a href="/observations/add?child_id={{child.id}}" class="btn btn-primary">
+                            <i class="bi bi-plus-circle"></i> Primera Observación
+                        </a>
+                    </div>
+                    {{/if}}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <a href="/children" class="btn btn-secondary">
+            <i class="bi bi-arrow-left"></i> Volver a la Lista
+        </a>
+    </div>
+</div>

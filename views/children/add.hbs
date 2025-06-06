@@ -1,0 +1,108 @@
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3><i class="bi bi-person-plus"></i> Agregar Nuevo Niño</h3>
+                </div>
+                <div class="card-body">
+                    {{#if error}}
+                    <div class="alert alert-danger" role="alert">
+                        <i class="bi bi-exclamation-triangle"></i> {{error}}
+                    </div>
+                    {{/if}}
+
+                    <form method="POST" action="/children/add">
+                        <!-- Información básica -->
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="name" class="form-label">Nombre *</label>
+                                    <input type="text" class="form-control" id="name" name="name" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="last_name" class="form-label">Apellido *</label>
+                                    <input type="text" class="form-control" id="last_name" name="last_name" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="age" class="form-label">Edad</label>
+                                    <input type="number" class="form-control" id="age" name="age" min="0" max="18">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="birthdate" class="form-label">Fecha de Nacimiento</label>
+                                    <input type="date" class="form-control" id="birthdate" name="birthdate">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label for="group_name" class="form-label">Grupo/Clase</label>
+                                    <input type="text" class="form-control" id="group_name" name="group_name" placeholder="ej. Pequeñitos, Medianos">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Información de contacto -->
+                        <h5 class="mt-4 mb-3">Información de Contacto</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="parent_name" class="form-label">Nombre del Padre/Tutor</label>
+                                    <input type="text" class="form-control" id="parent_name" name="parent_name">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="parent_phone" class="form-label">Teléfono</label>
+                                    <input type="tel" class="form-control" id="parent_phone" name="parent_phone">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="parent_email" class="form-label">Email</label>
+                                    <input type="email" class="form-control" id="parent_email" name="parent_email">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="emergency_contact" class="form-label">Contacto de Emergencia</label>
+                                    <input type="text" class="form-control" id="emergency_contact" name="emergency_contact" placeholder="Nombre y teléfono">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Información adicional -->
+                        <h5 class="mt-4 mb-3">Información Adicional</h5>
+                        <div class="mb-3">
+                            <label for="special_needs" class="form-label">Necesidades Especiales</label>
+                            <textarea class="form-control" id="special_needs" name="special_needs" rows="2" placeholder="Alergias, medicamentos, condiciones médicas, etc."></textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="notes" class="form-label">Notas Adicionales</label>
+                            <textarea class="form-control" id="notes" name="notes" rows="3" placeholder="Cualquier información adicional importante"></textarea>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="/children" class="btn btn-secondary me-md-2">Cancelar</a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-person-plus"></i> Agregar Niño
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

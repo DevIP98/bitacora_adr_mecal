@@ -1,0 +1,82 @@
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3><i class="bi bi-person-plus"></i> Registrar Nuevo Usuario</h3>
+                </div>
+                <div class="card-body">
+                    {{#if error}}
+                    <div class="alert alert-danger" role="alert">
+                        <i class="bi bi-exclamation-triangle"></i> {{error}}
+                    </div>
+                    {{/if}}
+
+                    {{#if success}}
+                    <div class="alert alert-success" role="alert">
+                        <i class="bi bi-check-circle"></i> {{success}}
+                    </div>
+                    {{/if}}
+
+                    <form method="POST" action="/auth/register">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="name" class="form-label">Nombre Completo *</label>
+                                    <input type="text" class="form-control" id="name" name="name" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="username" class="form-label">Usuario *</label>
+                                    <input type="text" class="form-control" id="username" name="username" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="email" class="form-label">Email</label>
+                                    <input type="email" class="form-control" id="email" name="email">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="role" class="form-label">Rol</label>
+                                    <select class="form-select" id="role" name="role">
+                                        <option value="teacher">Maestro/Líder</option>
+                                        <option value="admin">Administrador</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="password" class="form-label">Contraseña *</label>
+                                    <input type="password" class="form-control" id="password" name="password" required minlength="6">
+                                    <div class="form-text">Mínimo 6 caracteres</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="confirmPassword" class="form-label">Confirmar Contraseña *</label>
+                                    <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="/dashboard" class="btn btn-secondary me-md-2">Cancelar</a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-person-plus"></i> Crear Usuario
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

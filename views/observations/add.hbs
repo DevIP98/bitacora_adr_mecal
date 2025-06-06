@@ -1,0 +1,410 @@
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card">
+                <div class="card-header">
+                    <h3><i class="bi bi-plus-circle"></i> Nueva Observación</h3>
+                </div>
+                <div class="card-body">
+                    {{#if error}}
+                    <div class="alert alert-danger" role="alert">
+                        <i class="bi bi-exclamation-triangle"></i> {{error}}
+                    </div>
+                    {{/if}}
+
+                    <form method="POST" action="/observations/add">
+                        <!-- Información básica -->
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="child_id" class="form-label">Niño/a *</label>
+                                    <select class="form-select" id="child_id" name="child_id" required>
+                                        <option value="">Seleccionar niño/a...</option>
+                                        {{#each children}}
+                                        <option value="{{this.id}}" {{#if (eq this.id ../selectedChildId)}}selected{{/if}}>
+                                            {{this.name}} {{this.last_name}}{{#if this.group_name}} - {{this.group_name}}{{/if}}
+                                        </option>
+                                        {{/each}}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="observation_date" class="form-label">Fecha de Observación *</label>
+                                    <input type="date" class="form-control" id="observation_date" name="observation_date" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tipos de observación -->
+                        <div class="mb-4">
+                            <label class="form-label">Tipo de observación (puede marcar más de una) *</label>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="observation_types" value="Participación en la clase" id="type1">
+                                        <label class="form-check-label" for="type1">
+                                            Participación en la clase
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="observation_types" value="Comportamiento" id="type2">
+                                        <label class="form-check-label" for="type2">
+                                            Comportamiento
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="observation_types" value="Actitud espiritual" id="type3">
+                                        <label class="form-check-label" for="type3">
+                                            Actitud espiritual
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="observation_types" value="Relación con otros" id="type4">
+                                        <label class="form-check-label" for="type4">
+                                            Relación con otros
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="observation_types" value="Necesidades especiales" id="type5">
+                                        <label class="form-check-label" for="type5">
+                                            Necesidades especiales
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="observation_types" value="Otros" id="type6">
+                                        <label class="form-check-label" for="type6">
+                                            Otros
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>                        </div>
+
+                        <!-- Preguntas sugeridas para conversaciones reflexivas -->
+                        <div class="mb-4">
+                            <div class="card card-info">
+                                <div class="card-header bg-info text-white">
+                                    <h6 class="mb-0">
+                                        <i class="bi bi-lightbulb"></i> Preguntas sugeridas para conversaciones reflexivas
+                                        <button type="button" class="btn btn-sm btn-outline-light ms-2" data-bs-toggle="collapse" data-bs-target="#suggestedQuestions">
+                                            <i class="bi bi-chevron-down"></i>
+                                        </button>
+                                    </h6>
+                                </div>
+                                <div class="collapse" id="suggestedQuestions">
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <h6 class="text-primary"><i class="bi bi-heart"></i> Emociones y Familia</h6>
+                                                <ul class="list-unstyled small">
+                                                    <li class="mb-2">
+                                                        <button type="button" class="btn btn-outline-primary btn-sm question-btn" data-question="¿Qué te gusta hacer con tu familia?">
+                                                            <i class="bi bi-plus-circle"></i>
+                                                        </button>
+                                                        ¿Qué te gusta hacer con tu familia?
+                                                    </li>
+                                                    <li class="mb-2">
+                                                        <button type="button" class="btn btn-outline-primary btn-sm question-btn" data-question="¿Qué te pone triste a veces?">
+                                                            <i class="bi bi-plus-circle"></i>
+                                                        </button>
+                                                        ¿Qué te pone triste a veces?
+                                                    </li>
+                                                    <li class="mb-2">
+                                                        <button type="button" class="btn btn-outline-primary btn-sm question-btn" data-question="¿Qué haces cuando alguien que quieres está triste?">
+                                                            <i class="bi bi-plus-circle"></i>
+                                                        </button>
+                                                        ¿Qué haces cuando alguien que quieres está triste?
+                                                    </li>
+                                                    <li class="mb-2">
+                                                        <button type="button" class="btn btn-outline-primary btn-sm question-btn" data-question="¿Cómo sabes cuándo estás enojado/a?">
+                                                            <i class="bi bi-plus-circle"></i>
+                                                        </button>
+                                                        ¿Cómo sabes cuándo estás enojado/a?
+                                                    </li>
+                                                    <li class="mb-2">
+                                                        <button type="button" class="btn btn-outline-primary btn-sm question-btn" data-question="¿Qué haces para calmarte cuando estás molesto/a?">
+                                                            <i class="bi bi-plus-circle"></i>
+                                                        </button>
+                                                        ¿Qué haces para calmarte cuando estás molesto/a?
+                                                    </li>
+                                                    <li class="mb-2">
+                                                        <button type="button" class="btn btn-outline-primary btn-sm question-btn" data-question="¿Cómo te sientes cuando alguien te felicita?">
+                                                            <i class="bi bi-plus-circle"></i>
+                                                        </button>
+                                                        ¿Cómo te sientes cuando alguien te felicita?
+                                                    </li>
+                                                </ul>
+
+                                                <h6 class="text-success mt-3"><i class="bi bi-people"></i> Relaciones en el Salón</h6>
+                                                <ul class="list-unstyled small">
+                                                    <li class="mb-2">
+                                                        <button type="button" class="btn btn-outline-success btn-sm question-btn" data-question="¿Cómo te sientes cuando estás en el salón con tus compañeros?">
+                                                            <i class="bi bi-plus-circle"></i>
+                                                        </button>
+                                                        ¿Cómo te sientes cuando estás en el salón con tus compañeros?
+                                                    </li>
+                                                    <li class="mb-2">
+                                                        <button type="button" class="btn btn-outline-success btn-sm question-btn" data-question="¿Hay algo que te gustaría cambiar del salón?">
+                                                            <i class="bi bi-plus-circle"></i>
+                                                        </button>
+                                                        ¿Hay algo que te gustaría cambiar del salón?
+                                                    </li>
+                                                    <li class="mb-2">
+                                                        <button type="button" class="btn btn-outline-success btn-sm question-btn" data-question="¿Te sientes escuchado/a cuando quieres decir algo?">
+                                                            <i class="bi bi-plus-circle"></i>
+                                                        </button>
+                                                        ¿Te sientes escuchado/a cuando quieres decir algo?
+                                                    </li>
+                                                    <li class="mb-2">
+                                                        <button type="button" class="btn btn-outline-success btn-sm question-btn" data-question="¿Qué es lo que más te gusta hacer durante las clases?">
+                                                            <i class="bi bi-plus-circle"></i>
+                                                        </button>
+                                                        ¿Qué es lo que más te gusta hacer durante las clases?
+                                                    </li>
+                                                    <li class="mb-2">
+                                                        <button type="button" class="btn btn-outline-success btn-sm question-btn" data-question="¿Cómo te sientes cuando la maestra o maestro te ayuda?">
+                                                            <i class="bi bi-plus-circle"></i>
+                                                        </button>
+                                                        ¿Cómo te sientes cuando la maestra o maestro te ayuda?
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <h6 class="text-warning"><i class="bi bi-person-hearts"></i> Amistades y Compañerismo</h6>
+                                                <ul class="list-unstyled small">
+                                                    <li class="mb-2">
+                                                        <button type="button" class="btn btn-outline-warning btn-sm question-btn" data-question="¿Con cuál de tus compañeros te la llevas mejor?">
+                                                            <i class="bi bi-plus-circle"></i>
+                                                        </button>
+                                                        ¿Con cuál de tus compañeros te la llevas mejor?
+                                                    </li>
+                                                    <li class="mb-2">
+                                                        <button type="button" class="btn btn-outline-warning btn-sm question-btn" data-question="¿Qué niño/a te ha hecho sentir mal o te ha excluido?">
+                                                            <i class="bi bi-plus-circle"></i>
+                                                        </button>
+                                                        ¿Qué niño/a te ha hecho sentir mal o te ha excluido?
+                                                    </li>
+                                                    <li class="mb-2">
+                                                        <button type="button" class="btn btn-outline-warning btn-sm question-btn" data-question="¿Sientes que tienes amigos en el salón?">
+                                                            <i class="bi bi-plus-circle"></i>
+                                                        </button>
+                                                        ¿Sientes que tienes amigos en el salón?
+                                                    </li>
+                                                    <li class="mb-2">
+                                                        <button type="button" class="btn btn-outline-warning btn-sm question-btn" data-question="¿Qué haces cuando un compañero no quiere jugar contigo?">
+                                                            <i class="bi bi-plus-circle"></i>
+                                                        </button>
+                                                        ¿Qué haces cuando un compañero no quiere jugar contigo?
+                                                    </li>
+                                                    <li class="mb-2">
+                                                        <button type="button" class="btn btn-outline-warning btn-sm question-btn" data-question="¿Cómo te hacen sentir tus compañeros cuando cometes un error?">
+                                                            <i class="bi bi-plus-circle"></i>
+                                                        </button>
+                                                        ¿Cómo te hacen sentir tus compañeros cuando cometes un error?
+                                                    </li>
+                                                    <li class="mb-2">
+                                                        <button type="button" class="btn btn-outline-warning btn-sm question-btn" data-question="¿Te sientes respetado/a por los demás niños?">
+                                                            <i class="bi bi-plus-circle"></i>
+                                                        </button>
+                                                        ¿Te sientes respetado/a por los demás niños?
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                        <div class="alert alert-info mt-3">
+                                            <i class="bi bi-info-circle"></i> 
+                                            <strong>Cómo usar:</strong> Haz clic en el botón <i class="bi bi-plus-circle"></i> junto a cualquier pregunta para agregarla automáticamente a la descripción. Puedes registrar respuestas breves o completar con observaciones del líder.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Descripción -->
+                        <div class="mb-4">
+                            <label for="description" class="form-label">Descripción de la observación *</label>
+                            <textarea class="form-control" id="description" name="description" rows="4" required placeholder="Describe detalladamente lo observado..."></textarea>
+                        </div>
+
+                        <!-- Etiquetas -->
+                        <div class="mb-4">
+                            <label class="form-label">Etiquetas</label>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="tags" value="Positivo" id="tag1">
+                                        <label class="form-check-label" for="tag1">
+                                            <span class="badge bg-success">Positivo</span>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="tags" value="Para seguimiento" id="tag2">
+                                        <label class="form-check-label" for="tag2">
+                                            <span class="badge bg-warning">Para seguimiento</span>
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="tags" value="Alerta" id="tag3">
+                                        <label class="form-check-label" for="tag3">
+                                            <span class="badge bg-danger">Alerta</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Acciones y seguimiento -->
+                        <h5 class="mb-3">Acciones y Seguimiento</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-check mb-3">
+                                    <input class="form-check-input" type="checkbox" name="talked_with_child" id="talked">
+                                    <label class="form-check-label" for="talked">
+                                        ¿Se habló con él/ella?
+                                    </label>
+                                </div>
+                                <div class="form-check mb-3">
+                                    <input class="form-check-input" type="checkbox" name="prayed_for_issue" id="prayed">
+                                    <label class="form-check-label" for="prayed">
+                                        ¿Se oró por ese tema?
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check mb-3">
+                                    <input class="form-check-input" type="checkbox" name="notified_parents" id="notified">
+                                    <label class="form-check-label" for="notified">
+                                        ¿Se notificó a padres/acudientes?
+                                    </label>
+                                </div>
+                                <div class="form-check mb-3">
+                                    <input class="form-check-input" type="checkbox" name="requires_followup" id="followup">
+                                    <label class="form-check-label" for="followup">
+                                        ¿Se dará seguimiento en la próxima clase?
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Comentarios adicionales -->
+                        <div class="mb-4">
+                            <label for="additional_comments" class="form-label">Comentarios adicionales / acciones tomadas</label>
+                            <textarea class="form-control" id="additional_comments" name="additional_comments" rows="3" placeholder="Describe cualquier acción adicional tomada o comentarios importantes..."></textarea>
+                        </div>                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="/dashboard" class="btn btn-secondary me-md-2">Cancelar</a>
+                            <button type="submit" class="btn btn-primary" id="submitBtn">
+                                <i class="bi bi-check-circle"></i> Guardar Observación
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Establecer la fecha actual por defecto
+document.addEventListener('DOMContentLoaded', function() {
+    const dateInput = document.getElementById('observation_date');
+    if (!dateInput.value) {
+        const today = new Date().toISOString().split('T')[0];
+        dateInput.value = today;
+    }
+    
+    // Manejar clics en preguntas sugeridas
+    const questionButtons = document.querySelectorAll('.question-btn');
+    const descriptionTextarea = document.getElementById('description');
+    
+    questionButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const question = this.getAttribute('data-question');
+            const currentText = descriptionTextarea.value.trim();
+            
+            // Agregar la pregunta al textarea
+            if (currentText === '') {
+                descriptionTextarea.value = `🔶 ${question}\nRespuesta: \n\n`;
+            } else {
+                descriptionTextarea.value = currentText + `\n\n🔶 ${question}\nRespuesta: \n\n`;
+            }
+            
+            // Enfocar el textarea y posicionar el cursor al final
+            descriptionTextarea.focus();
+            descriptionTextarea.setSelectionRange(descriptionTextarea.value.length, descriptionTextarea.value.length);
+            
+            // Feedback visual
+            this.innerHTML = '<i class="bi bi-check-circle"></i>';
+            this.classList.remove('btn-outline-primary', 'btn-outline-success', 'btn-outline-warning');
+            this.classList.add('btn-success');
+            
+            // Restaurar el botón después de 2 segundos
+            setTimeout(() => {
+                this.innerHTML = '<i class="bi bi-plus-circle"></i>';
+                this.classList.remove('btn-success');
+                if (this.getAttribute('data-question').includes('familia') || 
+                    this.getAttribute('data-question').includes('triste') ||
+                    this.getAttribute('data-question').includes('enojado') ||
+                    this.getAttribute('data-question').includes('molesto') ||
+                    this.getAttribute('data-question').includes('felicita')) {
+                    this.classList.add('btn-outline-primary');
+                } else if (this.getAttribute('data-question').includes('salón') ||
+                          this.getAttribute('data-question').includes('clases') ||
+                          this.getAttribute('data-question').includes('maestra')) {
+                    this.classList.add('btn-outline-success');
+                } else {
+                    this.classList.add('btn-outline-warning');
+                }            }, 2000);
+        });
+    });
+
+    // Validación del formulario
+    const form = document.querySelector('form');
+    const submitBtn = document.getElementById('submitBtn');
+    
+    form.addEventListener('submit', function(e) {
+        const observationTypes = document.querySelectorAll('input[name="observation_types"]:checked');
+        
+        if (observationTypes.length === 0) {
+            e.preventDefault();
+            
+            // Mostrar mensaje de error
+            let errorDiv = document.querySelector('.validation-error');
+            if (!errorDiv) {
+                errorDiv = document.createElement('div');
+                errorDiv.className = 'alert alert-warning validation-error mt-3';
+                errorDiv.innerHTML = '<i class="bi bi-exclamation-triangle"></i> Debe seleccionar al menos un tipo de observación.';
+                
+                const typesSection = document.querySelector('.mb-4');
+                typesSection.appendChild(errorDiv);
+            }
+            
+            // Hacer scroll hacia el error
+            errorDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            
+            return false;
+        }
+        
+        // Remover mensaje de error si existe
+        const errorDiv = document.querySelector('.validation-error');
+        if (errorDiv) {
+            errorDiv.remove();
+        }
+    });
+    
+    // Remover mensaje de error cuando se seleccione un tipo
+    document.querySelectorAll('input[name="observation_types"]').forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            const errorDiv = document.querySelector('.validation-error');
+            if (errorDiv && document.querySelectorAll('input[name="observation_types"]:checked').length > 0) {
+                errorDiv.remove();
+            }
+        });
+    });
+});
+</script>

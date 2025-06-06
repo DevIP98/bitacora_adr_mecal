@@ -1,0 +1,133 @@
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="bi bi-house"></i> Dashboard</h2>
+                <div>
+                    <a href="/children/add" class="btn btn-success me-2">
+                        <i class="bi bi-person-plus"></i> Agregar Niño
+                    </a>
+                    <a href="/observations/add" class="btn btn-primary">
+                        <i class="bi bi-plus-circle"></i> Nueva Observación
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{#if error}}
+    <div class="alert alert-danger" role="alert">
+        <i class="bi bi-exclamation-triangle"></i> {{error}}
+    </div>
+    {{/if}}
+
+    <!-- Estadísticas -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h5 class="card-title">Total de Niños</h5>
+                            <h2>{{stats.totalChildren}}</h2>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="bi bi-people fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h5 class="card-title">Observaciones Recientes</h5>
+                            <h2>{{recentObservations.length}}</h2>
+                        </div>
+                        <div class="align-self-center">
+                            <i class="bi bi-eye fs-1"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Lista de niños -->
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5><i class="bi bi-people"></i> Niños Registrados</h5>
+                    <a href="/children" class="btn btn-sm btn-outline-primary">Ver todos</a>
+                </div>
+                <div class="card-body">
+                    {{#if children}}
+                    <div class="list-group list-group-flush">
+                        {{#each children}}
+                        <div class="list-group-item d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>{{this.name}} {{this.last_name}}</strong>
+                                {{#if this.age}}<br><small class="text-muted">{{this.age}} años</small>{{/if}}
+                                {{#if this.group_name}}<br><small class="text-muted">Grupo: {{this.group_name}}</small>{{/if}}
+                            </div>
+                            <div class="btn-group" role="group">
+                                <a href="/children/{{this.id}}" class="btn btn-sm btn-outline-primary" title="Ver detalles">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                <a href="/observations/add?child_id={{this.id}}" class="btn btn-sm btn-outline-success" title="Nueva observación">
+                                    <i class="bi bi-plus"></i>
+                                </a>
+                            </div>
+                        </div>
+                        {{/each}}
+                    </div>
+                    {{else}}
+                    <div class="text-center text-muted py-4">
+                        <i class="bi bi-people fs-1"></i>
+                        <p>No hay niños registrados</p>
+                        <a href="/children/add" class="btn btn-primary">Agregar primer niño</a>
+                    </div>
+                    {{/if}}
+                </div>
+            </div>
+        </div>
+
+        <!-- Observaciones recientes -->
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5><i class="bi bi-clock-history"></i> Observaciones Recientes</h5>
+                    <a href="/observations" class="btn btn-sm btn-outline-primary">Ver todas</a>
+                </div>
+                <div class="card-body">
+                    {{#if recentObservations}}
+                    <div class="list-group list-group-flush">
+                        {{#each recentObservations}}
+                        <div class="list-group-item">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">{{this.child_name}} {{this.child_last_name}}</h6>
+                                <small>{{formatDate this.observation_date}}</small>
+                            </div>
+                            <p class="mb-1">{{this.description}}</p>
+                            <small class="text-muted">Por: {{this.observer_name}}</small>
+                            {{#if this.requires_followup}}
+                            <span class="badge bg-warning ms-2">Seguimiento</span>
+                            {{/if}}
+                        </div>
+                        {{/each}}
+                    </div>
+                    {{else}}
+                    <div class="text-center text-muted py-4">
+                        <i class="bi bi-journal fs-1"></i>
+                        <p>No hay observaciones registradas</p>
+                        <a href="/observations/add" class="btn btn-primary">Crear primera observación</a>
+                    </div>
+                    {{/if}}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
