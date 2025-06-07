@@ -27,10 +27,11 @@ const hbs = exphbs.create({
         },
         formatDateTime: function(date) {
             return moment(date).format('DD/MM/YYYY HH:mm');
-        },        eq: function(a, b) {
+        },
+        eq: function(a, b) {
             return a === b;
         },
-        'JSON.parse': function(context) {
+        parseJSON: function(context) {
             try {
                 // Si no hay contexto, retornar array vacío
                 if (!context || context === null || context === undefined) {
@@ -72,6 +73,69 @@ const hbs = exphbs.create({
                 });
                 return [];
             }
+        },        formatQuestionsAndAnswers: function(description) {
+            console.log('🔍 formatQuestionsAndAnswers recibió:', description);
+            if (!description) return '';
+            
+            // Revisar si contiene formato de preguntas (🔶 y "Respuesta:")
+            if (description.includes('🔶') && description.includes('Respuesta:')) {
+                console.log('✅ Detectado formato de preguntas reflexivas');
+                // Dividir por el delimitador 🔶
+                const parts = description.split('🔶');
+                
+                let html = '';
+                
+                // El primer elemento puede ser texto inicial
+                if (parts[0].trim()) {
+                    // Verificar si tiene el separador de preguntas reflexivas
+                    let initialText = parts[0].trim();
+                    if (initialText.includes('--- Preguntas reflexivas ---')) {
+                        const textParts = initialText.split('--- Preguntas reflexivas ---');
+                        if (textParts[0].trim()) {
+                            html += `<div class="mb-3"><strong>Observación directa:</strong><br>${textParts[0].trim().replace(/\n/g, '<br>')}</div>`;
+                        }
+                    } else {
+                        html += `<p>${initialText.replace(/\n/g, '<br>')}</p>`;
+                    }
+                }
+                
+                // Procesar cada pregunta y respuesta
+                for (let i = 1; i < parts.length; i++) {
+                    const part = parts[i].trim();
+                    if (!part) continue;
+                    
+                    // Buscar "Respuesta:" para separar pregunta y respuesta
+                    const respuestaIndex = part.indexOf('Respuesta:');
+                    
+                    if (respuestaIndex !== -1) {
+                        const question = part.substring(0, respuestaIndex).trim();
+                        const answer = part.substring(respuestaIndex + 10).trim(); // 10 = "Respuesta:".length
+                        
+                        html += '<div class="question-item">';
+                        html += `<div class="question"><strong>🔶 ${question}</strong></div>`;
+                        if (answer) {
+                            html += `<div class="answer"><strong>Respuesta:</strong> ${answer.replace(/\n/g, '<br>')}</div>`;
+                        }
+                        html += '</div>';
+                    } else {
+                        // Si no hay formato "Respuesta:", mostrar como pregunta sin respuesta
+                        html += '<div class="question-item">';
+                        html += `<div class="question"><strong>🔶 ${part.replace(/\n/g, '<br>')}</strong></div>`;
+                        html += '</div>';
+                    }                }
+                
+                console.log('🎯 HTML generado:', html);
+                return html;            } else {
+                console.log('❌ No es formato de preguntas, retornando texto normal');
+                // No es formato de preguntas, devolver texto normal con saltos de línea
+                return description.replace(/\n/g, '<br>');
+            }
+        },
+          // Helper para detectar si el texto tiene formato de preguntas
+        hasQuestionFormat: function(text) {
+            const hasFormat = text && text.includes('🔶') && text.includes('Respuesta:');
+            console.log('🔍 hasQuestionFormat para:', text ? text.substring(0, 50) + '...' : 'null', 'Resultado:', hasFormat);
+            return hasFormat;
         }
     }
 });

@@ -80,152 +80,218 @@
                                         </label>
                                     </div>
                                 </div>
-                            </div>                        </div>
-
-                        <!-- Preguntas sugeridas para conversaciones reflexivas -->
+                            </div>                   
+                        </div>          
+                        <!-- Descripción de observación directa (solo para tipos de observación) -->
+                        <div class="mb-4">
+                            <label for="description" class="form-label">Observación directa *</label>
+                            <small class="form-text text-muted">Describe lo observado relacionado con los tipos de observación seleccionados arriba.</small>
+                            <textarea class="form-control mt-2" id="description" name="description" rows="4" required placeholder="Ejemplo: Durante la actividad de grupo, mostró liderazgo natural al ayudar a otros niños..."></textarea>
+                        </div>              
+                        <!-- Preguntas reflexivas interactivas -->
                         <div class="mb-4">
                             <div class="card card-info">
                                 <div class="card-header bg-info text-white">
                                     <h6 class="mb-0">
-                                        <i class="bi bi-lightbulb"></i> Preguntas sugeridas para conversaciones reflexivas
+                                        <i class="bi bi-lightbulb"></i> Preguntas reflexivas
                                         <button type="button" class="btn btn-sm btn-outline-light ms-2" data-bs-toggle="collapse" data-bs-target="#suggestedQuestions">
                                             <i class="bi bi-chevron-down"></i>
                                         </button>
                                     </h6>
                                 </div>
-                                <div class="collapse" id="suggestedQuestions">
+                                <div class="collapse show" id="suggestedQuestions">
                                     <div class="card-body">
+                                        <div class="alert alert-info">
+                                            <i class="bi bi-info-circle"></i> 
+                                            <strong>Instrucciones:</strong> Haz clic en cualquier pregunta para activarla y poder escribir la respuesta directamente aquí. Las preguntas respondidas se incluirán automáticamente en la observación.
+                                        </div>
+                                        
                                         <div class="row">
                                             <div class="col-md-6">
                                                 <h6 class="text-primary"><i class="bi bi-heart"></i> Emociones y Familia</h6>
-                                                <ul class="list-unstyled small">
-                                                    <li class="mb-2">
-                                                        <button type="button" class="btn btn-outline-primary btn-sm question-btn" data-question="¿Qué te gusta hacer con tu familia?">
-                                                            <i class="bi bi-plus-circle"></i>
-                                                        </button>
-                                                        ¿Qué te gusta hacer con tu familia?
-                                                    </li>
-                                                    <li class="mb-2">
-                                                        <button type="button" class="btn btn-outline-primary btn-sm question-btn" data-question="¿Qué te pone triste a veces?">
-                                                            <i class="bi bi-plus-circle"></i>
-                                                        </button>
-                                                        ¿Qué te pone triste a veces?
-                                                    </li>
-                                                    <li class="mb-2">
-                                                        <button type="button" class="btn btn-outline-primary btn-sm question-btn" data-question="¿Qué haces cuando alguien que quieres está triste?">
-                                                            <i class="bi bi-plus-circle"></i>
-                                                        </button>
-                                                        ¿Qué haces cuando alguien que quieres está triste?
-                                                    </li>
-                                                    <li class="mb-2">
-                                                        <button type="button" class="btn btn-outline-primary btn-sm question-btn" data-question="¿Cómo sabes cuándo estás enojado/a?">
-                                                            <i class="bi bi-plus-circle"></i>
-                                                        </button>
-                                                        ¿Cómo sabes cuándo estás enojado/a?
-                                                    </li>
-                                                    <li class="mb-2">
-                                                        <button type="button" class="btn btn-outline-primary btn-sm question-btn" data-question="¿Qué haces para calmarte cuando estás molesto/a?">
-                                                            <i class="bi bi-plus-circle"></i>
-                                                        </button>
-                                                        ¿Qué haces para calmarte cuando estás molesto/a?
-                                                    </li>
-                                                    <li class="mb-2">
-                                                        <button type="button" class="btn btn-outline-primary btn-sm question-btn" data-question="¿Cómo te sientes cuando alguien te felicita?">
-                                                            <i class="bi bi-plus-circle"></i>
-                                                        </button>
-                                                        ¿Cómo te sientes cuando alguien te felicita?
-                                                    </li>
-                                                </ul>
+                                                <div class="questions-container">
+                                                    <div class="question-item mb-3" data-question="¿Qué te gusta hacer con tu familia?">
+                                                        <div class="question-header" onclick="toggleQuestion(this)">
+                                                            <i class="bi bi-plus-circle me-2"></i>
+                                                            <span class="question-text">¿Qué te gusta hacer con tu familia?</span>
+                                                        </div>
+                                                        <div class="answer-input" style="display: none;">
+                                                            <textarea class="form-control mt-2" rows="2" placeholder="Escribe la respuesta aquí..."></textarea>
+                                                        </div>
+                                                    </div>                                                    <div class="question-item mb-3" data-question="¿Qué te pone triste a veces?">
+                                                        <div class="question-header" onclick="toggleQuestion(this)">
+                                                            <i class="bi bi-plus-circle me-2"></i>
+                                                            <span class="question-text">¿Qué te pone triste a veces?</span>
+                                                        </div>
+                                                        <div class="answer-input" style="display: none;">
+                                                            <textarea class="form-control mt-2" rows="2" placeholder="Escribe la respuesta aquí..."></textarea>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <div class="question-item mb-3" data-question="¿Qué haces cuando alguien que quieres está triste?">
+                                                        <div class="question-header" onclick="toggleQuestion(this)">
+                                                            <i class="bi bi-plus-circle me-2"></i>
+                                                            <span class="question-text">¿Qué haces cuando alguien que quieres está triste?</span>
+                                                        </div>
+                                                        <div class="answer-input" style="display: none;">
+                                                            <textarea class="form-control mt-2" rows="2" placeholder="Escribe la respuesta aquí..."></textarea>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <div class="question-item mb-3" data-question="¿Cómo sabes cuándo estás enojado/a?">
+                                                        <div class="question-header" onclick="toggleQuestion(this)">
+                                                            <i class="bi bi-plus-circle me-2"></i>
+                                                            <span class="question-text">¿Cómo sabes cuándo estás enojado/a?</span>
+                                                        </div>
+                                                        <div class="answer-input" style="display: none;">
+                                                            <textarea class="form-control mt-2" rows="2" placeholder="Escribe la respuesta aquí..."></textarea>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <div class="question-item mb-3" data-question="¿Qué haces para calmarte cuando estás molesto/a?">
+                                                        <div class="question-header" onclick="toggleQuestion(this)">
+                                                            <i class="bi bi-plus-circle me-2"></i>
+                                                            <span class="question-text">¿Qué haces para calmarte cuando estás molesto/a?</span>
+                                                        </div>
+                                                        <div class="answer-input" style="display: none;">
+                                                            <textarea class="form-control mt-2" rows="2" placeholder="Escribe la respuesta aquí..."></textarea>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <div class="question-item mb-3" data-question="¿Cómo te sientes cuando alguien te felicita?">
+                                                        <div class="question-header" onclick="toggleQuestion(this)">
+                                                            <i class="bi bi-plus-circle me-2"></i>
+                                                            <span class="question-text">¿Cómo te sientes cuando alguien te felicita?</span>
+                                                        </div>
+                                                        <div class="answer-input" style="display: none;">
+                                                            <textarea class="form-control mt-2" rows="2" placeholder="Escribe la respuesta aquí..."></textarea>
+                                                        </div>
+                                                    </div>
+                                                </div>
 
                                                 <h6 class="text-success mt-3"><i class="bi bi-people"></i> Relaciones en el Salón</h6>
-                                                <ul class="list-unstyled small">
-                                                    <li class="mb-2">
-                                                        <button type="button" class="btn btn-outline-success btn-sm question-btn" data-question="¿Cómo te sientes cuando estás en el salón con tus compañeros?">
-                                                            <i class="bi bi-plus-circle"></i>
-                                                        </button>
-                                                        ¿Cómo te sientes cuando estás en el salón con tus compañeros?
-                                                    </li>
-                                                    <li class="mb-2">
-                                                        <button type="button" class="btn btn-outline-success btn-sm question-btn" data-question="¿Hay algo que te gustaría cambiar del salón?">
-                                                            <i class="bi bi-plus-circle"></i>
-                                                        </button>
-                                                        ¿Hay algo que te gustaría cambiar del salón?
-                                                    </li>
-                                                    <li class="mb-2">
-                                                        <button type="button" class="btn btn-outline-success btn-sm question-btn" data-question="¿Te sientes escuchado/a cuando quieres decir algo?">
-                                                            <i class="bi bi-plus-circle"></i>
-                                                        </button>
-                                                        ¿Te sientes escuchado/a cuando quieres decir algo?
-                                                    </li>
-                                                    <li class="mb-2">
-                                                        <button type="button" class="btn btn-outline-success btn-sm question-btn" data-question="¿Qué es lo que más te gusta hacer durante las clases?">
-                                                            <i class="bi bi-plus-circle"></i>
-                                                        </button>
-                                                        ¿Qué es lo que más te gusta hacer durante las clases?
-                                                    </li>
-                                                    <li class="mb-2">
-                                                        <button type="button" class="btn btn-outline-success btn-sm question-btn" data-question="¿Cómo te sientes cuando la maestra o maestro te ayuda?">
-                                                            <i class="bi bi-plus-circle"></i>
-                                                        </button>
-                                                        ¿Cómo te sientes cuando la maestra o maestro te ayuda?
-                                                    </li>
-                                                </ul>
-                                            </div>
-                                            <div class="col-md-6">
+                                                <div class="questions-container">
+                                                    <div class="question-item mb-3" data-question="¿Cómo te sientes cuando estás en el salón con tus compañeros?">
+                                                        <div class="question-header" onclick="toggleQuestion(this)">
+                                                            <i class="bi bi-plus-circle me-2"></i>
+                                                            <span class="question-text">¿Cómo te sientes cuando estás en el salón con tus compañeros?</span>
+                                                        </div>
+                                                        <div class="answer-input" style="display: none;">
+                                                            <textarea class="form-control mt-2" rows="2" placeholder="Escribe la respuesta aquí..."></textarea>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <div class="question-item mb-3" data-question="¿Hay algo que te gustaría cambiar del salón?">
+                                                        <div class="question-header" onclick="toggleQuestion(this)">
+                                                            <i class="bi bi-plus-circle me-2"></i>
+                                                            <span class="question-text">¿Hay algo que te gustaría cambiar del salón?</span>
+                                                        </div>
+                                                        <div class="answer-input" style="display: none;">
+                                                            <textarea class="form-control mt-2" rows="2" placeholder="Escribe la respuesta aquí..."></textarea>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <div class="question-item mb-3" data-question="¿Te sientes escuchado/a cuando quieres decir algo?">
+                                                        <div class="question-header" onclick="toggleQuestion(this)">
+                                                            <i class="bi bi-plus-circle me-2"></i>
+                                                            <span class="question-text">¿Te sientes escuchado/a cuando quieres decir algo?</span>
+                                                        </div>
+                                                        <div class="answer-input" style="display: none;">
+                                                            <textarea class="form-control mt-2" rows="2" placeholder="Escribe la respuesta aquí..."></textarea>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <div class="question-item mb-3" data-question="¿Qué es lo que más te gusta hacer durante las clases?">
+                                                        <div class="question-header" onclick="toggleQuestion(this)">
+                                                            <i class="bi bi-plus-circle me-2"></i>
+                                                            <span class="question-text">¿Qué es lo que más te gusta hacer durante las clases?</span>
+                                                        </div>
+                                                        <div class="answer-input" style="display: none;">
+                                                            <textarea class="form-control mt-2" rows="2" placeholder="Escribe la respuesta aquí..."></textarea>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <div class="question-item mb-3" data-question="¿Cómo te sientes cuando la maestra o maestro te ayuda?">
+                                                        <div class="question-header" onclick="toggleQuestion(this)">
+                                                            <i class="bi bi-plus-circle me-2"></i>
+                                                            <span class="question-text">¿Cómo te sientes cuando la maestra o maestro te ayuda?</span>
+                                                        </div>
+                                                        <div class="answer-input" style="display: none;">
+                                                            <textarea class="form-control mt-2" rows="2" placeholder="Escribe la respuesta aquí..."></textarea>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>                            <div class="col-md-6">
                                                 <h6 class="text-warning"><i class="bi bi-person-hearts"></i> Amistades y Compañerismo</h6>
-                                                <ul class="list-unstyled small">
-                                                    <li class="mb-2">
-                                                        <button type="button" class="btn btn-outline-warning btn-sm question-btn" data-question="¿Con cuál de tus compañeros te la llevas mejor?">
-                                                            <i class="bi bi-plus-circle"></i>
-                                                        </button>
-                                                        ¿Con cuál de tus compañeros te la llevas mejor?
-                                                    </li>
-                                                    <li class="mb-2">
-                                                        <button type="button" class="btn btn-outline-warning btn-sm question-btn" data-question="¿Qué niño/a te ha hecho sentir mal o te ha excluido?">
-                                                            <i class="bi bi-plus-circle"></i>
-                                                        </button>
-                                                        ¿Qué niño/a te ha hecho sentir mal o te ha excluido?
-                                                    </li>
-                                                    <li class="mb-2">
-                                                        <button type="button" class="btn btn-outline-warning btn-sm question-btn" data-question="¿Sientes que tienes amigos en el salón?">
-                                                            <i class="bi bi-plus-circle"></i>
-                                                        </button>
-                                                        ¿Sientes que tienes amigos en el salón?
-                                                    </li>
-                                                    <li class="mb-2">
-                                                        <button type="button" class="btn btn-outline-warning btn-sm question-btn" data-question="¿Qué haces cuando un compañero no quiere jugar contigo?">
-                                                            <i class="bi bi-plus-circle"></i>
-                                                        </button>
-                                                        ¿Qué haces cuando un compañero no quiere jugar contigo?
-                                                    </li>
-                                                    <li class="mb-2">
-                                                        <button type="button" class="btn btn-outline-warning btn-sm question-btn" data-question="¿Cómo te hacen sentir tus compañeros cuando cometes un error?">
-                                                            <i class="bi bi-plus-circle"></i>
-                                                        </button>
-                                                        ¿Cómo te hacen sentir tus compañeros cuando cometes un error?
-                                                    </li>
-                                                    <li class="mb-2">
-                                                        <button type="button" class="btn btn-outline-warning btn-sm question-btn" data-question="¿Te sientes respetado/a por los demás niños?">
-                                                            <i class="bi bi-plus-circle"></i>
-                                                        </button>
-                                                        ¿Te sientes respetado/a por los demás niños?
-                                                    </li>
-                                                </ul>
+                                                <div class="questions-container">
+                                                    <div class="question-item mb-3" data-question="¿Con cuál de tus compañeros te la llevas mejor?">
+                                                        <div class="question-header" onclick="toggleQuestion(this)">
+                                                            <i class="bi bi-plus-circle me-2"></i>
+                                                            <span class="question-text">¿Con cuál de tus compañeros te la llevas mejor?</span>
+                                                        </div>
+                                                        <div class="answer-input" style="display: none;">
+                                                            <textarea class="form-control mt-2" rows="2" placeholder="Escribe la respuesta aquí..."></textarea>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <div class="question-item mb-3" data-question="¿Qué niño/a te ha hecho sentir mal o te ha excluido?">
+                                                        <div class="question-header" onclick="toggleQuestion(this)">
+                                                            <i class="bi bi-plus-circle me-2"></i>
+                                                            <span class="question-text">¿Qué niño/a te ha hecho sentir mal o te ha excluido?</span>
+                                                        </div>
+                                                        <div class="answer-input" style="display: none;">
+                                                            <textarea class="form-control mt-2" rows="2" placeholder="Escribe la respuesta aquí..."></textarea>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <div class="question-item mb-3" data-question="¿Sientes que tienes amigos en el salón?">
+                                                        <div class="question-header" onclick="toggleQuestion(this)">
+                                                            <i class="bi bi-plus-circle me-2"></i>
+                                                            <span class="question-text">¿Sientes que tienes amigos en el salón?</span>
+                                                        </div>
+                                                        <div class="answer-input" style="display: none;">
+                                                            <textarea class="form-control mt-2" rows="2" placeholder="Escribe la respuesta aquí..."></textarea>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <div class="question-item mb-3" data-question="¿Qué haces cuando un compañero no quiere jugar contigo?">
+                                                        <div class="question-header" onclick="toggleQuestion(this)">
+                                                            <i class="bi bi-plus-circle me-2"></i>
+                                                            <span class="question-text">¿Qué haces cuando un compañero no quiere jugar contigo?</span>
+                                                        </div>
+                                                        <div class="answer-input" style="display: none;">
+                                                            <textarea class="form-control mt-2" rows="2" placeholder="Escribe la respuesta aquí..."></textarea>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <div class="question-item mb-3" data-question="¿Cómo te hacen sentir tus compañeros cuando cometes un error?">
+                                                        <div class="question-header" onclick="toggleQuestion(this)">
+                                                            <i class="bi bi-plus-circle me-2"></i>
+                                                            <span class="question-text">¿Cómo te hacen sentir tus compañeros cuando cometes un error?</span>
+                                                        </div>
+                                                        <div class="answer-input" style="display: none;">
+                                                            <textarea class="form-control mt-2" rows="2" placeholder="Escribe la respuesta aquí..."></textarea>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <div class="question-item mb-3" data-question="¿Te sientes respetado/a por los demás niños?">
+                                                        <div class="question-header" onclick="toggleQuestion(this)">
+                                                            <i class="bi bi-plus-circle me-2"></i>
+                                                            <span class="question-text">¿Te sientes respetado/a por los demás niños?</span>
+                                                        </div>
+                                                        <div class="answer-input" style="display: none;">
+                                                            <textarea class="form-control mt-2" rows="2" placeholder="Escribe la respuesta aquí..."></textarea>
+                                                        </div>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
-                                        <div class="alert alert-info mt-3">
-                                            <i class="bi bi-info-circle"></i> 
-                                            <strong>Cómo usar:</strong> Haz clic en el botón <i class="bi bi-plus-circle"></i> junto a cualquier pregunta para agregarla automáticamente a la descripción. Puedes registrar respuestas breves o completar con observaciones del líder.
-                                        </div>
+                                        
+                                        <!-- Campo oculto para almacenar las preguntas y respuestas -->
+                                        <input type="hidden" id="reflexive_questions" name="reflexive_questions" value="">
                                     </div>
                                 </div>
                             </div>
-                        </div>
-
-                        <!-- Descripción -->
-                        <div class="mb-4">
-                            <label for="description" class="form-label">Descripción de la observación *</label>
-                            <textarea class="form-control" id="description" name="description" rows="4" required placeholder="Describe detalladamente lo observado..."></textarea>
                         </div>
 
                         <!-- Etiquetas -->
@@ -318,54 +384,8 @@ document.addEventListener('DOMContentLoaded', function() {
         dateInput.value = today;
     }
     
-    // Manejar clics en preguntas sugeridas
-    const questionButtons = document.querySelectorAll('.question-btn');
-    const descriptionTextarea = document.getElementById('description');
-    
-    questionButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const question = this.getAttribute('data-question');
-            const currentText = descriptionTextarea.value.trim();
-            
-            // Agregar la pregunta al textarea
-            if (currentText === '') {
-                descriptionTextarea.value = `🔶 ${question}\nRespuesta: \n\n`;
-            } else {
-                descriptionTextarea.value = currentText + `\n\n🔶 ${question}\nRespuesta: \n\n`;
-            }
-            
-            // Enfocar el textarea y posicionar el cursor al final
-            descriptionTextarea.focus();
-            descriptionTextarea.setSelectionRange(descriptionTextarea.value.length, descriptionTextarea.value.length);
-            
-            // Feedback visual
-            this.innerHTML = '<i class="bi bi-check-circle"></i>';
-            this.classList.remove('btn-outline-primary', 'btn-outline-success', 'btn-outline-warning');
-            this.classList.add('btn-success');
-            
-            // Restaurar el botón después de 2 segundos
-            setTimeout(() => {
-                this.innerHTML = '<i class="bi bi-plus-circle"></i>';
-                this.classList.remove('btn-success');
-                if (this.getAttribute('data-question').includes('familia') || 
-                    this.getAttribute('data-question').includes('triste') ||
-                    this.getAttribute('data-question').includes('enojado') ||
-                    this.getAttribute('data-question').includes('molesto') ||
-                    this.getAttribute('data-question').includes('felicita')) {
-                    this.classList.add('btn-outline-primary');
-                } else if (this.getAttribute('data-question').includes('salón') ||
-                          this.getAttribute('data-question').includes('clases') ||
-                          this.getAttribute('data-question').includes('maestra')) {
-                    this.classList.add('btn-outline-success');
-                } else {
-                    this.classList.add('btn-outline-warning');
-                }            }, 2000);
-        });
-    });
-
     // Validación del formulario
     const form = document.querySelector('form');
-    const submitBtn = document.getElementById('submitBtn');
     
     form.addEventListener('submit', function(e) {
         const observationTypes = document.querySelectorAll('input[name="observation_types"]:checked');
@@ -389,6 +409,12 @@ document.addEventListener('DOMContentLoaded', function() {
             
             return false;
         }
+          // Compilar preguntas reflexivas antes de enviar
+        compileReflexiveQuestions();
+        
+        // Debug: verificar que se está compilando
+        const reflexiveValue = document.getElementById('reflexive_questions').value;
+        console.log('Valor del campo reflexive_questions antes de enviar:', reflexiveValue);
         
         // Remover mensaje de error si existe
         const errorDiv = document.querySelector('.validation-error');
@@ -407,4 +433,75 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 });
+
+// Función para activar/desactivar preguntas reflexivas
+function toggleQuestion(element) {
+    const questionItem = element.closest('.question-item');
+    const answerInput = questionItem.querySelector('.answer-input');
+    const icon = element.querySelector('i');
+    const questionText = element.querySelector('.question-text');
+    
+    if (answerInput.style.display === 'none') {
+        // Activar pregunta
+        answerInput.style.display = 'block';
+        icon.className = 'bi bi-check-circle me-2 text-success';
+        questionText.style.fontWeight = 'bold';
+        questionText.style.color = '#198754';
+        questionItem.style.backgroundColor = '#f8f9fa';
+        questionItem.style.border = '2px solid #198754';
+        questionItem.style.borderRadius = '8px';
+        
+        // Enfocar el textarea
+        const textarea = answerInput.querySelector('textarea');
+        setTimeout(() => textarea.focus(), 100);
+    } else {
+        // Desactivar pregunta
+        answerInput.style.display = 'none';
+        icon.className = 'bi bi-plus-circle me-2';
+        questionText.style.fontWeight = 'normal';
+        questionText.style.color = '#495057';
+        questionItem.style.backgroundColor = '';
+        questionItem.style.border = '';
+        questionItem.style.borderRadius = '';
+        
+        // Limpiar respuesta
+        const textarea = answerInput.querySelector('textarea');
+        textarea.value = '';
+    }
+}
+
+// Función para compilar todas las preguntas y respuestas
+function compileReflexiveQuestions() {
+    const questionItems = document.querySelectorAll('.question-item');
+    const reflexiveQuestionsData = [];
+    
+    questionItems.forEach(item => {
+        const answerInput = item.querySelector('.answer-input');
+        const textarea = answerInput.querySelector('textarea');
+        
+        if (answerInput.style.display !== 'none' && textarea.value.trim() !== '') {
+            const question = item.getAttribute('data-question');
+            const answer = textarea.value.trim();
+            
+            reflexiveQuestionsData.push({
+                question: question,
+                answer: answer
+            });
+        }
+    });
+    
+    // Convertir a formato que el sistema pueda procesar
+    let compiledText = '';
+    reflexiveQuestionsData.forEach(item => {
+        if (compiledText !== '') {
+            compiledText += '\n\n';
+        }
+        compiledText += `🔶 ${item.question}\nRespuesta: ${item.answer}`;
+    });
+      // Guardar en el campo oculto
+    document.getElementById('reflexive_questions').value = compiledText;
+    
+    // Debug: mostrar lo que se está enviando
+    console.log('Preguntas reflexivas compiladas:', compiledText);
+}
 </script>

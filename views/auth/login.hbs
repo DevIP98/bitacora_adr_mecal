@@ -1,9 +1,8 @@
 <div class="auth-container">
-    <div class="auth-card">
-        <!-- Header con diseño mejorado -->
+    <div class="auth-card">        <!-- Header con diseño mejorado -->
         <div class="auth-header text-center mb-4">
             <div class="auth-logo">
-                <i class="bi bi-journal-text"></i>
+                <img src="/logo/logoMecal.png" alt="Logo Mecal" class="auth-logo-img">
             </div>
             <h1 class="auth-title">Bitácora ADR</h1>
             <p class="auth-subtitle">Sistema de Registro para Ministerio Infantil</p>
@@ -54,21 +53,10 @@
                             <span class="input-group-text"><i class="bi bi-lock"></i></span>
                             <input type="password" class="form-control" id="password" name="password" placeholder="Ingrese su contraseña" required>
                         </div>
-                    </div>
-
-                    <button type="submit" class="btn btn-primary btn-modern w-100 mb-3">
+                    </div>                    <button type="submit" class="btn btn-primary btn-modern w-100 mb-3">
                         <i class="bi bi-box-arrow-in-right me-2"></i>Iniciar Sesión
                     </button>
                 </form>
-
-                <div class="text-center">
-                    <div class="demo-credentials">
-                        <small class="text-muted">
-                            <i class="bi bi-info-circle me-1"></i>
-                            Cuenta demo: <strong>admin</strong> / <strong>admin123</strong>
-                        </small>
-                    </div>
-                </div>
             </div>
 
             <!-- Tab de Registro -->
@@ -129,6 +117,29 @@ document.addEventListener('DOMContentLoaded', function() {
     const registerForm = document.getElementById('registerForm');
     const passwordField = document.getElementById('reg_password');
     const confirmPasswordField = document.getElementById('reg_confirmPassword');
+    const logoImg = document.querySelector('.auth-logo-img');
+    const tabs = document.querySelectorAll('#authTabs .nav-link');
+
+    // Manejo del logo con fallback
+    if (logoImg) {
+        logoImg.addEventListener('error', function() {
+            this.style.display = 'none';
+            const logoContainer = this.closest('.auth-logo');
+            logoContainer.innerHTML = '<i class="bi bi-journal-text"></i>';
+        });
+    }
+
+    // Mejora de transiciones entre tabs
+    tabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+            // Agregar pequeña vibración visual al cambiar tab
+            const tabContent = document.querySelector('.tab-content');
+            tabContent.style.transform = 'scale(0.98)';
+            setTimeout(() => {
+                tabContent.style.transform = 'scale(1)';
+            }, 150);
+        });
+    });
 
     function validatePasswords() {
         const password = passwordField.value;

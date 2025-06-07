@@ -87,21 +87,44 @@ body {
 
 .auth-logo {
     display: inline-block;
-    width: 80px;
-    height: 80px;
-    background: linear-gradient(135deg, #667eea, #764ba2);
+    width: 120px;
+    height: 120px;
+    background: linear-gradient(135deg, #2c3e50, #3498db);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     margin: 0 auto 1rem;
-    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+    box-shadow: 0 15px 35px rgba(44, 62, 80, 0.3);
     animation: pulse 2s ease-in-out infinite;
+    padding: 15px;
+    border: 4px solid rgba(255, 255, 255, 0.1);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
 }
 
 @keyframes pulse {
     0%, 100% { transform: scale(1); }
     50% { transform: scale(1.05); }
+}
+
+.auth-logo-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.2));
+    transition: transform 0.3s ease;
+}
+
+.auth-logo:hover {
+    transform: scale(1.05);
+    box-shadow: 0 20px 40px rgba(44, 62, 80, 0.4);
+    animation-play-state: paused;
+}
+
+.auth-logo:hover .auth-logo-img {
+    transform: scale(1.1);
 }
 
 .auth-logo i {
@@ -131,26 +154,93 @@ body {
     background: #f8f9fa;
     border-radius: 1rem;
     padding: 0.25rem;
+    display: flex;
+    justify-content: center;
+    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.08);
+}
+
+.nav-tabs-modern .nav-item {
+    flex: 1;
+    margin: 0 2px;
 }
 
 .nav-tabs-modern .nav-link {
     border: none;
     border-radius: 0.75rem;
     color: #6c757d;
-    font-weight: 500;
+    font-weight: 600;
     transition: all 0.3s ease;
     margin: 0;
+    padding: 0.75rem 1rem;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.nav-tabs-modern .nav-link::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s ease;
 }
 
 .nav-tabs-modern .nav-link:hover {
     color: #495057;
     background: rgba(102, 126, 234, 0.1);
+    transform: translateY(-1px);
+}
+
+.nav-tabs-modern .nav-link:hover::before {
+    left: 100%;
 }
 
 .nav-tabs-modern .nav-link.active {
     background: linear-gradient(135deg, #667eea, #764ba2);
     color: white;
     box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+    transform: translateY(-1px);
+}
+
+.nav-tabs-modern .nav-link.active::before {
+    display: none;
+}
+
+.nav-tabs-modern .nav-link i {
+    margin-right: 0.5rem;
+    font-size: 1rem;
+}
+
+/* Contenido de tabs */
+.tab-content {
+    position: relative;
+    transition: transform 0.15s ease;
+}
+
+.tab-pane {
+    transition: opacity 0.3s ease-in-out;
+}
+
+.tab-pane.show.active {
+    animation: fadeInUp 0.4s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* Input groups modernos */
@@ -358,8 +448,9 @@ body {
     }
     
     .auth-logo {
-        width: 60px;
-        height: 60px;
+        width: 90px;
+        height: 90px;
+        padding: 10px;
     }
     
     .auth-logo i {
@@ -368,6 +459,16 @@ body {
     
     .auth-title {
         font-size: 1.8rem;
+    }
+    
+    .nav-tabs-modern .nav-link {
+        padding: 0.6rem 0.5rem;
+        font-size: 0.8rem;
+    }
+    
+    .nav-tabs-modern .nav-link i {
+        margin-right: 0.3rem;
+        font-size: 0.9rem;
     }
 }
 
@@ -415,6 +516,194 @@ body {
 
 .timeline-content {
     padding: 1.5rem;
+}
+
+/* Estilos para observaciones organizadas */
+.observation-section {
+    border-left: 3px solid var(--primary-color);
+    padding-left: 15px;
+    margin-bottom: 20px;
+}
+
+.observation-section h6 {
+    color: var(--primary-color);
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+
+.observation-section h6 i {
+    margin-right: 8px;
+    width: 20px;
+    text-align: center;
+}
+
+/* Estilos específicos para preguntas estructuradas */
+.question-item {
+    background-color: #f8f9fa;
+    border-left: 4px solid #007bff;
+    padding: 0.75rem;
+    margin-bottom: 0.75rem;
+    border-radius: 0 0.375rem 0.375rem 0;
+}
+
+.question-item .question {
+    color: #0056b3;
+    margin-bottom: 0.5rem;
+    font-size: 0.95rem;
+}
+
+.question-item .answer {
+    color: #495057;
+    font-size: 0.9rem;
+    padding-left: 1rem;
+    border-left: 2px solid #dee2e6;
+    margin-left: 0.5rem;
+    background-color: #fff;
+    padding: 0.5rem 1rem;
+    border-radius: 0.25rem;
+}
+
+/* Estilos para descripciones libres (sin formato de preguntas) */
+.observation-section div {
+    line-height: 1.6;
+}
+
+.observation-section div p {
+    margin-bottom: 0.5rem;
+}
+
+.observation-section div p:last-child {
+    margin-bottom: 0;
+}
+
+/* Cajas de acciones */
+.action-box {
+    text-align: center;
+    border: 1px solid #dee2e6;
+    border-radius: 0.375rem;
+    padding: 0.375rem 0.25rem;
+    min-height: 45px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background-color: #f8f9fa;
+    transition: all 0.3s ease;
+}
+
+.action-box.completed {
+    background-color: #d1edff;
+    border-color: #bee5eb;
+}
+
+.action-box i {
+    font-size: 1rem;
+    margin-bottom: 0.125rem;
+}
+
+.action-box small {
+    font-size: 0.7rem;
+    line-height: 1.1;
+}
+
+/* Responsive para móviles */
+@media (max-width: 576px) {
+    .action-box {
+        min-height: 40px;
+        padding: 0.25rem;
+    }
+    
+    .action-box i {
+        font-size: 0.9rem;
+    }
+    
+    .action-box small {
+        font-size: 0.65rem;
+    }
+}
+
+/* Secciones de comentarios */
+.comments-section {
+    background-color: #f8f9fa;
+    border-left: 3px solid #6c757d;
+    font-style: italic;
+}
+
+/* Estilos para preguntas reflexivas interactivas */
+.questions-container {
+    max-height: 400px;
+    overflow-y: auto;
+    padding-right: 10px;
+}
+
+.question-item {
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 10px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    background-color: #fff;
+}
+
+.question-item:hover {
+    border-color: #007bff;
+    box-shadow: 0 2px 4px rgba(0,123,255,0.1);
+}
+
+.question-header {
+    display: flex;
+    align-items: center;
+    font-size: 0.9rem;
+    color: #495057;
+    cursor: pointer;
+}
+
+.question-header i {
+    font-size: 1.1rem;
+    transition: all 0.3s ease;
+}
+
+.question-text {
+    line-height: 1.4;
+    transition: all 0.3s ease;
+}
+
+.answer-input textarea {
+    border: 1px solid #ced4da;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    resize: vertical;
+    min-height: 60px;
+}
+
+.answer-input textarea:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0,123,255,0.25);
+}
+
+/* Estilos para preguntas activadas */
+.question-item[style*="border: 2px solid"] {
+    transform: translateY(-1px);
+}
+
+/* Scrollbar personalizada para contenedor de preguntas */
+.questions-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.questions-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.questions-container::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+}
+
+.questions-container::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
 }
 
 /* Cards mejoradas */
@@ -482,9 +771,13 @@ body {
 
 /* Badges personalizadas */
 .badge {
-    font-size: 0.75rem;
-    padding: 0.4rem 0.6rem;
-    border-radius: 0.375rem;
+    font-size: 0.85em;
+    padding: 0.5em 0.75em;
+    border-radius: 0.5rem;
+}
+
+.badge.bg-secondary {
+    background-color: #6f42c1 !important;
 }
 
 /* Alertas */
@@ -630,4 +923,66 @@ body {
 
 .border-start-danger {
     border-left: 4px solid var(--danger-color) !important;
+}
+
+/* Estilos para preguntas reflexivas */
+.questions-list {
+    padding-left: 20px;
+    margin-bottom: 0;
+}
+
+.question-item {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 15px;
+    border-left: 4px solid var(--primary-color);
+    margin-bottom: 15px !important;
+}
+
+.question-text {
+    font-weight: 500;
+    color: #495057;
+    margin-bottom: 8px;
+    font-size: 0.95rem;
+}
+
+.answer-text {
+    color: #6c757d;
+    font-size: 0.9rem;
+    padding-left: 15px;
+    border-left: 2px solid #dee2e6;
+    background: #fff;
+    padding: 8px 15px;
+    border-radius: 4px;
+}
+
+.question-text strong {
+    color: var(--primary-color);
+    margin-right: 5px;
+}
+
+.answer-text strong {
+    color: var(--success-color);
+    margin-right: 5px;
+}
+
+/* Responsivo para preguntas */
+@media (max-width: 768px) {
+    .questions-list {
+        padding-left: 10px;
+    }
+    
+    .question-item {
+        padding: 12px;
+    }
+    
+    .question-text,
+    .answer-text {
+        font-size: 0.85rem;
+    }
+    
+    .answer-text {
+        padding: 6px 12px;
+        padding-left: 12px;
+    }
 }

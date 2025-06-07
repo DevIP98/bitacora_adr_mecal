@@ -30,54 +30,76 @@
                                 </a>
                             </h6>
                             <small class="text-muted">{{formatDate this.observation_date}}</small>
-                        </div>
-                        <div class="card-body">
-                            <!-- Tipos de observación -->
-                            <div class="mb-2">
-                                {{#if this.observation_types}}
-                                {{#each (JSON.parse this.observation_types)}}
-                                <span class="badge bg-secondary me-1">{{this}}</span>
-                                {{/each}}
-                                {{/if}}
+                        </div>                        <div class="card-body">                            <!-- Tipo de Observación -->
+                            {{#if this.observation_types}}
+                            <div class="observation-section">
+                                <h6><i class="bi bi-tag"></i> Tipo de Observación:</h6>
+                                <div>
+                                    {{#each (parseJSON this.observation_types)}}
+                                        <span class="badge bg-secondary me-1">{{this}}</span>
+                                    {{/each}}
+                                </div>
                             </div>
-
-                            <!-- Descripción -->
-                            <p class="card-text">{{this.description}}</p>
+                            {{/if}}                            <!-- Descripción / Preguntas reflexivas -->
+                            <div class="observation-section">
+                                {{#if (hasQuestionFormat this.description)}}
+                                    <h6><i class="bi bi-question-circle"></i> Preguntas reflexivas:</h6>
+                                {{else}}
+                                    <h6><i class="bi bi-file-text"></i> Descripción:</h6>
+                                {{/if}}
+                                <div>{{{formatQuestionsAndAnswers this.description}}}</div>
+                            </div>
 
                             <!-- Etiquetas -->
                             {{#if this.tags}}
-                            <div class="mb-2">
-                                {{#each (JSON.parse this.tags)}}
-                                <span class="badge {{#if (eq this 'Positivo')}}bg-success{{else if (eq this 'Alerta')}}bg-danger{{else}}bg-warning{{/if}} me-1">
-                                    {{this}}
-                                </span>
-                                {{/each}}
-                            </div>
-                            {{/if}}
-
-                            <!-- Acciones tomadas -->
-                            <div class="row text-center mt-3">
-                                <div class="col-3">
-                                    <small class="text-muted d-block">Conversó</small>
-                                    <i class="bi {{#if this.talked_with_child}}bi-check-circle text-success{{else}}bi-x-circle text-muted{{/if}}"></i>
-                                </div>
-                                <div class="col-3">
-                                    <small class="text-muted d-block">Oró</small>
-                                    <i class="bi {{#if this.prayed_for_issue}}bi-check-circle text-success{{else}}bi-x-circle text-muted{{/if}}"></i>
-                                </div>
-                                <div class="col-3">
-                                    <small class="text-muted d-block">Notificó</small>
-                                    <i class="bi {{#if this.notified_parents}}bi-check-circle text-success{{else}}bi-x-circle text-muted{{/if}}"></i>
-                                </div>
-                                <div class="col-3">
-                                    <small class="text-muted d-block">Seguimiento</small>
-                                    <i class="bi {{#if this.requires_followup}}bi-check-circle text-warning{{else}}bi-x-circle text-muted{{/if}}"></i>
+                            <div class="observation-section">
+                                <h6><i class="bi bi-bookmark"></i> Etiquetas:</h6>
+                                <div>
+                                    {{#each (parseJSON this.tags)}}
+                                    <span class="badge {{#if (eq this 'Positivo')}}bg-success{{else if (eq this 'Alerta')}}bg-danger{{else}}bg-warning{{/if}} me-1">
+                                        {{this}}
+                                    </span>
+                                    {{/each}}
                                 </div>
                             </div>
+                            {{/if}}                            <!-- Acciones Realizadas -->
+                            <div class="observation-section">
+                                <h6><i class="bi bi-check2-square"></i> Acciones Realizadas:</h6>
+                                <div class="row text-center g-2">
+                                    <div class="col-3">
+                                        <div class="action-box border rounded {{#if this.talked_with_child}}completed{{/if}}">
+                                            <i class="bi {{#if this.talked_with_child}}bi-check-circle text-success{{else}}bi-x-circle text-muted{{/if}}"></i>
+                                            <small class="text-muted d-block">Conversó</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-3">
+                                        <div class="action-box border rounded {{#if this.prayed_for_issue}}completed{{/if}}">
+                                            <i class="bi {{#if this.prayed_for_issue}}bi-check-circle text-success{{else}}bi-x-circle text-muted{{/if}}"></i>
+                                            <small class="text-muted d-block">Oró</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-3">
+                                        <div class="action-box border rounded {{#if this.notified_parents}}completed{{/if}}">
+                                            <i class="bi {{#if this.notified_parents}}bi-check-circle text-success{{else}}bi-x-circle text-muted{{/if}}"></i>
+                                            <small class="text-muted d-block">Notificó</small>
+                                        </div>
+                                    </div>
+                                    <div class="col-3">
+                                        <div class="action-box border rounded {{#if this.requires_followup}}completed{{/if}}">
+                                            <i class="bi {{#if this.requires_followup}}bi-check-circle text-warning{{else}}bi-x-circle text-muted{{/if}}"></i>
+                                            <small class="text-muted d-block">Seguimiento</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
 
+                            <!-- Comentarios Adicionales -->
                             {{#if this.additional_comments}}
-                            <div class="mt-3">
-                                <small><strong>Comentarios:</strong> {{this.additional_comments}}</small>
+                            <div class="observation-section">
+                                <h6><i class="bi bi-chat-left-text"></i> Comentarios Adicionales:</h6>
+                                <div class="comments-section p-2 rounded">
+                                    <small>{{this.additional_comments}}</small>
+                                </div>
                             </div>
                             {{/if}}
                         </div>

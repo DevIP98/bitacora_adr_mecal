@@ -30,13 +30,16 @@ router.post('/add', async (req, res) => {
             observation_date,
             observation_types,
             description,
+            reflexive_questions,
             tags,
             talked_with_child,
             prayed_for_issue,
             notified_parents,
             requires_followup,
             additional_comments
-        } = req.body;        if (!child_id || !observation_date || !description) {
+        } = req.body;
+
+        if (!child_id || !observation_date || !description) {
             return res.redirect('/observations/add?error=Por favor complete todos los campos requeridos');
         }
 
@@ -50,7 +53,22 @@ router.post('/add', async (req, res) => {
             if (!value) return [];
             if (Array.isArray(value)) return value.filter(Boolean);
             return [value].filter(Boolean);
-        };
+        };        // Combinar descripción directa con preguntas reflexivas
+        let finalDescription = description.trim();
+        
+        console.log('Datos recibidos:');
+        console.log('- description:', description);
+        console.log('- reflexive_questions:', reflexive_questions);
+        
+        if (reflexive_questions && reflexive_questions.trim()) {
+            if (finalDescription) {
+                finalDescription += '\n\n--- Preguntas reflexivas ---\n\n' + reflexive_questions.trim();
+            } else {
+                finalDescription = reflexive_questions.trim();
+            }
+        }
+        
+        console.log('- finalDescription:', finalDescription);
 
         // Convertir arrays a JSON strings
         const observationData = {
@@ -58,7 +76,7 @@ router.post('/add', async (req, res) => {
             observer_id: req.session.user.id,
             observation_date,
             observation_types: JSON.stringify(toArray(observation_types)),
-            description,
+            description: finalDescription,
             tags: JSON.stringify(toArray(tags)),
             talked_with_child: talked_with_child === 'on' ? 1 : 0,
             prayed_for_issue: prayed_for_issue === 'on' ? 1 : 0,
