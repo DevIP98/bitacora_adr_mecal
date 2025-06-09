@@ -40,28 +40,45 @@ class Database {
             await this.tryConnect(dbPath);
             this.currentDbPath = dbPath;
             console.log(`✅ [DATABASE] Conectado exitosamente a: ${dbPath}`);
-            return;
-        } catch (error) {
-            console.warn(`⚠️ [DATABASE] Falló conexión a ${dbPath}:`, error.message);
+            return;        } catch (error) {
+            console.warn(`⚠️ [DATABASE] Falló conexión a ${dbPath}:`, {
+                message: error.message,
+                code: error.code,
+                errno: error.errno
+            });
+            
+            // Limpiar referencia de DB fallida
+            if (this.db) {
+                try {
+                    this.db.close();
+                } catch (closeErr) {
+                    console.warn('⚠️ [DATABASE] Error cerrando DB fallida:', closeErr.message);
+                }
+                this.db = null;
+            }
             
             // Si no es la última ruta, intentar la siguiente
             if (pathIndex < DB_PATHS.length - 1) {
                 console.log('🔄 [DATABASE] Intentando siguiente ruta...');
                 return this.tryConnectSequential(pathIndex + 1);
             } else {
-                throw error;
+                // Si todas las rutas fallaron, arrojar el último error pero de forma controlada
+                const finalError = new Error(`❌ [DATABASE] Agotadas todas las rutas. Último error: ${error.message}`);
+                finalError.originalError = error;
+                throw finalError;
             }
         }
-    }
-
-    tryConnect(dbPath) {
+    }    tryConnect(dbPath) {
         return new Promise((resolve, reject) => {
+            let connectionResolved = false;
+
             // Solo crear directorio si no es memoria
             if (dbPath !== ':memory:') {
                 const dbDir = path.dirname(dbPath);
                 console.log('📁 [DATABASE] Verificando directorio:', dbDir);
                 
-                try {                    if (!fs.existsSync(dbDir)) {
+                try {
+                    if (!fs.existsSync(dbDir)) {
                         console.log('📁 [DATABASE] Creando directorio de base de datos:', dbDir);
                         fs.mkdirSync(dbDir, { recursive: true });
                         console.log('✅ [DATABASE] Directorio creado exitosamente');
@@ -76,11 +93,26 @@ class Database {
                 } catch (dirError) {
                     console.error('❌ [DATABASE] Error con directorio:', dirError);
                     reject(dirError);
-                    return;                }
+                    return;
+                }
             }
             
             console.log('🔄 [DATABASE] Intentando conectar a:', dbPath);
+            
+            // Timeout para evitar conexiones colgadas
+            const timeoutId = setTimeout(() => {
+                if (!connectionResolved) {
+                    connectionResolved = true;
+                    console.error('⏰ [DATABASE] Timeout en conexión a:', dbPath);
+                    reject(new Error(`Timeout conectando a ${dbPath}`));
+                }
+            }, 5000); // 5 segundos timeout
+
             this.db = new sqlite3.Database(dbPath, (err) => {
+                if (connectionResolved) return;
+                clearTimeout(timeoutId);
+                connectionResolved = true;
+
                 if (err) {
                     console.error('❌ [DATABASE] Error conectando a la base de datos:', {
                         error: err.message,
@@ -91,29 +123,57 @@ class Database {
                     reject(err);
                 } else {
                     console.log('✅ [DATABASE] Conectado a la base de datos SQLite en:', dbPath);
+                    
                     // Configurar opciones de SQLite para mejor rendimiento
                     this.db.run('PRAGMA foreign_keys = ON');
                     this.db.run('PRAGMA journal_mode = WAL');
+                    
+                    // Configurar manejo de errores DESPUÉS de conexión exitosa
+                    this.db.on('error', (err) => {
+                        console.error('❌ [DATABASE] Evento de error SQLite post-conexión:', err);
+                        // No rechazar aquí para evitar crashes
+                    });
+                    
                     resolve();
                 }
             });
-
-            // Manejar eventos de error no capturados
-            this.db.on('error', (err) => {
-                console.error('❌ [DATABASE] Evento de error SQLite:', err);
-                reject(err);
-            });
         });
-    }
-
-    initDatabase() {
+    }    initDatabase() {
         return new Promise(async (resolve, reject) => {
             try {
+                console.log('🔄 [DATABASE] Iniciando conexión...');
                 await this.connect();
+                
+                console.log('🔄 [DATABASE] Creando tablas...');
                 await this.createTables();
+                
+                console.log('🔄 [DATABASE] Verificando usuario por defecto...');
                 await this.createDefaultUser();
+                
+                console.log('✅ [DATABASE] Inicialización completada exitosamente');
                 resolve();
             } catch (error) {
+                console.error('❌ [DATABASE] Error en inicialización:', {
+                    message: error.message,
+                    code: error.code,
+                    errno: error.errno,
+                    originalError: error.originalError?.message
+                });
+                
+                // Verificar si tenemos al menos una conexión parcial
+                if (this.db) {
+                    console.log('⚠️ [DATABASE] Conexión parcial disponible, intentando operación degradada...');
+                    try {
+                        // Intentar operaciones básicas con la conexión que tenemos
+                        await this.createTables();
+                        console.log('✅ [DATABASE] Tablas creadas con conexión degradada');
+                        resolve();
+                        return;
+                    } catch (degradedError) {
+                        console.error('❌ [DATABASE] Falló operación degradada:', degradedError.message);
+                    }
+                }
+                
                 reject(error);
             }
         });
@@ -432,6 +492,34 @@ class Database {
                 }
             );
         });
+    }
+
+    // Verificar si la base de datos está disponible y funcionando
+    async isHealthy() {
+        if (!this.db) {
+            return false;
+        }
+
+        return new Promise((resolve) => {
+            this.db.get("SELECT 1 as test", (err, row) => {
+                if (err) {
+                    console.error('❌ [DATABASE] Health check failed:', err);
+                    resolve(false);
+                } else {
+                    console.log('✅ [DATABASE] Health check passed');
+                    resolve(true);
+                }
+            });
+        });
+    }
+
+    // Obtener información de estado de la base de datos
+    getStatus() {
+        return {
+            connected: !!this.db,
+            currentPath: this.currentDbPath,
+            isMemory: this.currentDbPath === ':memory:'
+        };
     }
 
     close() {

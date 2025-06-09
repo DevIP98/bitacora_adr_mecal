@@ -363,6 +363,32 @@ app.get('/debug/sessions', (req, res) => {
     }
 });
 
+// Ruta de debug para verificar estado de la base de datos
+app.get('/debug/database', async (req, res) => {
+    try {
+        const status = db.getStatus();
+        const healthy = await db.isHealthy();
+        
+        res.json({
+            status: 'Database Debug Information',
+            connected: status.connected,
+            currentPath: status.currentPath,
+            isMemory: status.isMemory,
+            healthy: healthy,
+            availablePaths: process.env.NODE_ENV === 'production' 
+                ? ['/opt/render/project/src/database/bitacora.db', '/tmp/bitacora.db', ':memory:']
+                : ['./database/bitacora.db'],
+            timestamp: new Date().toISOString()
+        });
+    } catch (error) {
+        res.status(500).json({
+            error: 'Error checking database status',
+            details: error.message,
+            timestamp: new Date().toISOString()
+        });
+    }
+});
+
 // Middleware de manejo de errores
 app.use((error, req, res, next) => {
     console.error('❌ Error no manejado:', error);
@@ -388,22 +414,39 @@ app.use((req, res) => {
 // Inicializar base de datos y servidor
 db.initDatabase().then(async () => {
     console.log('✅ Base de datos inicializada correctamente');
+    console.log(`📊 [DATABASE] Usando ruta: ${db.currentDbPath || 'desconocida'}`);
     
     // Crear usuario admin de emergencia
     console.log('🔧 Verificando/creando usuario administrador...');
     await db.createEmergencyAdmin();
     
+    startServer();
+}).catch(error => {
+    console.error('❌ Error al inicializar la base de datos:', error);
+    console.error('Stack trace:', error.stack);
+    
+    // En lugar de terminar la aplicación, intentar con modo degradado
+    console.log('🚨 [FALLBACK] Intentando iniciar en modo degradado...');
+    
+    // Verificar si hay al menos una conexión parcial
+    if (db.db) {
+        console.log('⚠️ [FALLBACK] Base de datos parcialmente disponible, continuando...');
+        startServer();
+    } else {
+        console.error('💀 [FATAL] No se pudo establecer ninguna conexión de base de datos');
+        process.exit(1);
+    }
+});
+
+function startServer() {
     app.listen(PORT, () => {
         console.log(`🚀 Servidor ejecutándose en puerto ${PORT}`);
         console.log(`🌐 Entorno: ${process.env.NODE_ENV || 'development'}`);
+        console.log(`📊 [DATABASE] Base de datos activa en: ${db.currentDbPath || 'desconocida'}`);
         console.log(`📱 Aplicación disponible en: ${process.env.NODE_ENV === 'production' ? 'https://bitacora-adr-mecal.onrender.com' : `http://localhost:${PORT}`}`);
         console.log(`👤 Credenciales: admin / admin123`);
         console.log(`🔍 Debug endpoints:`);
         console.log(`   - GET /debug/users - Ver usuarios registrados`);
         console.log(`   - POST /debug/create-admin - Crear usuario admin`);
     });
-}).catch(error => {
-    console.error('❌ Error al inicializar la base de datos:', error);
-    console.error('Stack trace:', error.stack);
-    process.exit(1);
-});
+}
