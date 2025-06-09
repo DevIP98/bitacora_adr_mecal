@@ -4,12 +4,12 @@ const bcrypt = require('bcryptjs');
 const fs = require('fs');
 
 // Determinar la ruta de la base de datos según el entorno
-// CONFIGURACIÓN RENDER: Usar ruta persistente primero, luego /tmp, luego memoria
+// CONFIGURACIÓN RENDER: Usar ruta temporal (garantizada de funcionar) primero, luego intentar rutas persistentes
 const DB_PATHS = process.env.NODE_ENV === 'production' 
     ? [
-        '/opt/render/project/src/database/render_fresh_test.db', // Intentar primero con un nombre de archivo nuevo
-        '/opt/render/project/src/database/bitacora.db',   // Luego la ruta persistente original
-        '/tmp/bitacora.db',                              // Segunda opción: /tmp (temporal)
+        '/tmp/bitacora.db',                              // Primera opción: /tmp (temporal pero funcionará)
+        '/opt/render/project/src/database/render_fresh_test.db', // Intento con un nombre de archivo nuevo
+        '/opt/render/project/src/database/bitacora.db',   // Ruta persistente original
         ':memory:'                                       // Última opción: memoria (fallback)
       ]
     : [path.join(__dirname, 'bitacora.db')];
@@ -111,6 +111,19 @@ class Database {
                         console.log('ℹ️ [DATABASE] Archivo no existe, se intentará crear por SQLite:', dbPath);
                     }
                     // >>> FIN NUEVO BLOQUE DE DEPURACIÓN DE ARCHIVO <<<<<
+
+                    // PRUEBA EXPLÍCITA DE ESCRITURA DE ARCHIVO
+                    const testFilePath = path.join(path.dirname(dbPath), 'test_write.txt');
+                    try {
+                        console.log(`🔬 [DATABASE] Probando escritura explícita: ${testFilePath}`);
+                        fs.writeFileSync(testFilePath, 'Test de escritura: ' + new Date().toISOString());
+                        console.log('✅ [DATABASE] Escritura exitosa en:', testFilePath);
+                        const readBack = fs.readFileSync(testFilePath, 'utf8');
+                        console.log(`✅ [DATABASE] Lectura exitosa: ${readBack.substring(0, 20)}...`);
+                    } catch (testWriteErr) {
+                        console.error('❌ [DATABASE] Error en prueba de escritura:', testWriteErr.message);
+                    }
+                    // FIN PRUEBA EXPLÍCITA
 
                 } catch (dirOrFileError) {
                     console.error('❌ [DATABASE] Error con directorio o archivo:', dirOrFileError);
