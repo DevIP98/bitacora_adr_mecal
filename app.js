@@ -214,7 +214,7 @@ app.use(session({
     resave: false,
     saveUninitialized: false,
     cookie: { 
-        secure: process.env.NODE_ENV === 'production', // true en producción, false en desarrollo
+        secure: false, // HOTFIX: Desactivar secure temporalmente para testing
         maxAge: 24 * 60 * 60 * 1000, // 24 horas
         httpOnly: true,
         sameSite: 'lax' // Mejorar compatibilidad con navegadores
@@ -224,18 +224,18 @@ app.use(session({
 
 console.log('✅ [SESSION] Store configurado:', sessionStore ? 'SQLite3Store' : 'MemoryStore (fallback)');
 
-// Middleware de logging para sesiones (solo en desarrollo)
-if (process.env.NODE_ENV !== 'production') {
-    app.use((req, res, next) => {
-        console.log('📝 [SESSION] Info:', {
-            sessionId: req.sessionID,
-            hasUser: !!req.session.user,
-            url: req.url,
-            method: req.method
-        });
-        next();
+// Middleware de logging para sesiones (habilitado también en producción para debugging)
+app.use((req, res, next) => {
+    console.log('📝 [SESSION] Info:', {
+        sessionId: req.sessionID,
+        hasUser: !!req.session.user,
+        url: req.url,
+        method: req.method,
+        cookies: req.headers.cookie ? 'presentes' : 'ausentes',
+        userAgent: req.headers['user-agent']?.substring(0, 50)
     });
-}
+    next();
+});
 
 // Middleware para verificar autenticación
 const requireAuth = (req, res, next) => {
@@ -243,7 +243,10 @@ const requireAuth = (req, res, next) => {
         sessionId: req.sessionID,
         hasUser: !!req.session.user,
         user: req.session.user ? req.session.user.username : 'ninguno',
-        url: req.url
+        url: req.url,
+        method: req.method,
+        cookies: req.headers.cookie ? 'presentes' : 'ausentes',
+        sessionData: req.session
     });
     
     if (req.session.user) {
@@ -251,6 +254,7 @@ const requireAuth = (req, res, next) => {
         next();
     } else {
         console.log('❌ [AUTH] Usuario no autenticado, redirigiendo a login');
+        console.log('🔍 [AUTH] Datos de sesión completos:', req.session);
         res.redirect('/auth/login');
     }
 };
