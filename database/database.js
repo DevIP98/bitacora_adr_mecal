@@ -4,63 +4,82 @@ const bcrypt = require('bcryptjs');
 const fs = require('fs');
 
 // Determinar la ruta de la base de datos según el entorno
-// TEMPORAL: Usar /tmp en producción hasta resolver problema del disco persistente
-let DB_PATH = process.env.NODE_ENV === 'production' 
-    ? '/tmp/bitacora.db'  // Usar /tmp temporalmente
-    : path.join(__dirname, 'bitacora.db');
+// HOTFIX: Usar memoria como última opción para garantizar funcionamiento
+const DB_PATHS = process.env.NODE_ENV === 'production' 
+    ? [
+        '/tmp/bitacora.db',  // Intentar /tmp primero
+        '/opt/render/project/src/database/bitacora.db',  // Luego disco persistente
+        ':memory:'  // Como último recurso, usar memoria
+      ]
+    : [path.join(__dirname, 'bitacora.db')];
 
-// Ruta de respaldo en caso de que el disco persistente falle
-const DB_PATH_FALLBACK = process.env.NODE_ENV === 'production' 
-    ? '/opt/render/project/src/database/bitacora.db'  // Intercambiar las rutas
-    : DB_PATH;
-
-console.log('🗄️ [DATABASE] Configurando base de datos (TEMPORAL /tmp):', DB_PATH);
-console.log('🗄️ [DATABASE] Ruta de respaldo:', DB_PATH_FALLBACK);
+console.log('🗄️ [DATABASE] Rutas disponibles:', DB_PATHS);
 console.log('🌐 [DATABASE] Entorno:', process.env.NODE_ENV || 'development');
 
 class Database {
     constructor() {
         this.db = null;
-    }    connect() {
+        this.currentDbPath = null;
+    }
+
+    connect() {
         return new Promise((resolve, reject) => {
-            this.tryConnect(DB_PATH).then(resolve).catch((err) => {
-                console.warn('⚠️ [DATABASE] Falló conexión principal, intentando ruta de respaldo...');
-                if (DB_PATH !== DB_PATH_FALLBACK) {
-                    this.tryConnect(DB_PATH_FALLBACK).then(() => {
-                        console.log('✅ [DATABASE] Conectado usando ruta de respaldo');
-                        resolve();
-                    }).catch(reject);
-                } else {
-                    reject(err);
-                }
-            });
+            this.tryConnectSequential(0).then(resolve).catch(reject);
         });
+    }
+
+    async tryConnectSequential(pathIndex) {
+        if (pathIndex >= DB_PATHS.length) {
+            throw new Error('❌ [DATABASE] Agotadas todas las rutas de conexión disponibles');
+        }
+
+        const dbPath = DB_PATHS[pathIndex];
+        console.log(`🔄 [DATABASE] Intentando conexión ${pathIndex + 1}/${DB_PATHS.length}: ${dbPath}`);
+
+        try {
+            await this.tryConnect(dbPath);
+            this.currentDbPath = dbPath;
+            console.log(`✅ [DATABASE] Conectado exitosamente a: ${dbPath}`);
+            return;
+        } catch (error) {
+            console.warn(`⚠️ [DATABASE] Falló conexión a ${dbPath}:`, error.message);
+            
+            // Si no es la última ruta, intentar la siguiente
+            if (pathIndex < DB_PATHS.length - 1) {
+                console.log('🔄 [DATABASE] Intentando siguiente ruta...');
+                return this.tryConnectSequential(pathIndex + 1);
+            } else {
+                throw error;
+            }
+        }
     }
 
     tryConnect(dbPath) {
         return new Promise((resolve, reject) => {
-            // Crear directorio si no existe (importante para producción)
-            const dbDir = path.dirname(dbPath);
-            console.log('📁 [DATABASE] Verificando directorio:', dbDir);
+            // Solo crear directorio si no es memoria
+            if (dbPath !== ':memory:') {
+                const dbDir = path.dirname(dbPath);
+                console.log('📁 [DATABASE] Verificando directorio:', dbDir);
+                
+                try {                    if (!fs.existsSync(dbDir)) {
+                        console.log('📁 [DATABASE] Creando directorio de base de datos:', dbDir);
+                        fs.mkdirSync(dbDir, { recursive: true });
+                        console.log('✅ [DATABASE] Directorio creado exitosamente');
+                    } else {
+                        console.log('✅ [DATABASE] Directorio ya existe');
+                    }
+
+                    // Verificar permisos de escritura en el directorio
+                    fs.accessSync(dbDir, fs.constants.W_OK);
+                    console.log('✅ [DATABASE] Permisos de escritura verificados');
+
+                } catch (dirError) {
+                    console.error('❌ [DATABASE] Error con directorio:', dirError);
+                    reject(dirError);
+                    return;                }
+            }
             
-            try {
-                if (!fs.existsSync(dbDir)) {
-                    console.log('📁 [DATABASE] Creando directorio de base de datos:', dbDir);
-                    fs.mkdirSync(dbDir, { recursive: true });
-                    console.log('✅ [DATABASE] Directorio creado exitosamente');
-                } else {
-                    console.log('✅ [DATABASE] Directorio ya existe');
-                }
-
-                // Verificar permisos de escritura en el directorio
-                fs.accessSync(dbDir, fs.constants.W_OK);
-                console.log('✅ [DATABASE] Permisos de escritura verificados');
-
-            } catch (dirError) {
-                console.error('❌ [DATABASE] Error con directorio:', dirError);
-                reject(dirError);
-                return;
-            }            console.log('🔄 [DATABASE] Intentando conectar a:', dbPath);
+            console.log('🔄 [DATABASE] Intentando conectar a:', dbPath);
             this.db = new sqlite3.Database(dbPath, (err) => {
                 if (err) {
                     console.error('❌ [DATABASE] Error conectando a la base de datos:', {

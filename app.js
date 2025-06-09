@@ -153,35 +153,62 @@ app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Configurar sesiones con SQLite3 Store
-// TEMPORAL: Usar /tmp en producción hasta resolver problema del disco persistente
-const sessionDbPath = process.env.NODE_ENV === 'production' 
-    ? '/tmp/sessions.db'  // Usar /tmp temporalmente
-    : path.join(__dirname, 'database', 'sessions.db');
+// Configurar rutas de sesiones con sistema de fallback
+const SESSION_PATHS = process.env.NODE_ENV === 'production' 
+    ? [
+        '/tmp/sessions.db',  // Intentar /tmp primero
+        '/opt/render/project/src/database/sessions.db',  // Luego disco persistente
+        ':memory:'  // Como último recurso, usar memoria (MemoryStore)
+      ]
+    : [path.join(__dirname, 'database', 'sessions.db')];
 
-console.log('🗄️ [SESSION] Configurando SQLite3 Store (TEMPORAL /tmp):', sessionDbPath);
+console.log('🗄️ [SESSION] Rutas de sesiones disponibles:', SESSION_PATHS);
 
-// Crear directorio de sesiones si no existe
-const sessionDir = path.dirname(sessionDbPath);
-try {
-    if (!fs.existsSync(sessionDir)) {
-        console.log('📁 [SESSION] Creando directorio de sesiones:', sessionDir);
-        fs.mkdirSync(sessionDir, { recursive: true });
-        console.log('✅ [SESSION] Directorio creado exitosamente');
-    } else {
-        console.log('✅ [SESSION] Directorio de sesiones ya existe');
+// Función para crear store de sesiones con fallback
+function createSessionStore() {
+    for (let i = 0; i < SESSION_PATHS.length; i++) {
+        const sessionPath = SESSION_PATHS[i];
+        console.log(`🔄 [SESSION] Intentando configurar store ${i + 1}/${SESSION_PATHS.length}: ${sessionPath}`);
+        
+        try {
+            if (sessionPath === ':memory:') {
+                console.log('⚠️ [SESSION] Usando MemoryStore como fallback');
+                return null; // Retornar null para usar el MemoryStore por defecto
+            }
+            
+            // Crear directorio si no existe
+            const sessionDir = path.dirname(sessionPath);
+            if (!fs.existsSync(sessionDir)) {
+                console.log('📁 [SESSION] Creando directorio:', sessionDir);
+                fs.mkdirSync(sessionDir, { recursive: true });
+            }
+            
+            // Verificar permisos de escritura
+            fs.accessSync(sessionDir, fs.constants.W_OK);
+            
+            console.log(`✅ [SESSION] Configurando SQLite3 Store en: ${sessionPath}`);
+            return new SQLiteStore({
+                db: sessionPath,
+                table: 'sessions',
+                dir: sessionDir,
+                concurrentDB: true,
+                timeout: 30000
+            });
+            
+        } catch (error) {
+            console.warn(`⚠️ [SESSION] Falló configuración en ${sessionPath}:`, error.message);
+            continue;
+        }
     }
-} catch (error) {
-    console.error('❌ [SESSION] Error creando directorio:', error);
+    
+    console.log('⚠️ [SESSION] Todas las rutas fallaron, usando MemoryStore');
+    return null;
 }
 
+const sessionStore = createSessionStore();
+
 app.use(session({
-    store: new SQLiteStore({
-        db: sessionDbPath,
-        table: 'sessions', // Nombre de la tabla donde se guardarán las sesiones
-        dir: sessionDir, // Directorio donde se creará la base de datos
-        concurrentDB: true, // Permitir conexiones concurrentes
-        timeout: 30000 // Timeout de 30 segundos para operaciones SQLite
-    }),
+    store: sessionStore, // Usar el store creado con fallback
     secret: process.env.SESSION_SECRET || 'bitacora-adr-secret-key',
     resave: false,
     saveUninitialized: false,
@@ -190,10 +217,11 @@ app.use(session({
         maxAge: 24 * 60 * 60 * 1000, // 24 horas
         httpOnly: true,
         sameSite: 'lax' // Mejorar compatibilidad con navegadores
-    },    name: 'bitacora.sid'
+    },
+    name: 'bitacora.sid'
 }));
 
-console.log('✅ [SESSION] SQLite3 Store configurado correctamente');
+console.log('✅ [SESSION] Store configurado:', sessionStore ? 'SQLite3Store' : 'MemoryStore (fallback)');
 
 // Middleware de logging para sesiones (solo en desarrollo)
 if (process.env.NODE_ENV !== 'production') {
