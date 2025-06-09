@@ -14,13 +14,21 @@
     "node": ">=16.0.0",
     "npm": ">=8.0.0"
   },
-  "keywords": ["bitacora", "ministerio", "infantil", "registro", "adr", "mecal"],
+  "keywords": [
+    "bitacora",
+    "ministerio",
+    "infantil",
+    "registro",
+    "adr",
+    "mecal"
+  ],
   "author": "Ministerio Mecal",
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
     "bcryptjs": "^3.0.2",
     "body-parser": "^2.2.0",
+    "connect-sqlite3": "^0.9.15",
     "express": "^5.1.0",
     "express-handlebars": "^8.0.1",
     "express-session": "^1.18.1",

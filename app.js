@@ -5,6 +5,9 @@ const session = require('express-session');
 const path = require('path');
 const moment = require('moment');
 
+// Configurar SQLite3 como store de sesiones
+const SQLiteStore = require('connect-sqlite3')(session);
+
 // Importar rutas
 const authRoutes = require('./routes/auth');
 const dashboardRoutes = require('./routes/dashboard');
@@ -148,18 +151,45 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Configurar sesiones
+// Configurar sesiones con SQLite3 Store
+const sessionDbPath = process.env.NODE_ENV === 'production' 
+    ? '/opt/render/project/src/database/sessions.db'
+    : path.join(__dirname, 'database', 'sessions.db');
+
+console.log('🗄️ [SESSION] Configurando SQLite3 Store:', sessionDbPath);
+
 app.use(session({
+    store: new SQLiteStore({
+        db: sessionDbPath,
+        table: 'sessions', // Nombre de la tabla donde se guardarán las sesiones
+        dir: path.dirname(sessionDbPath), // Directorio donde se creará la base de datos
+        concurrentDB: true // Permitir conexiones concurrentes
+    }),
     secret: process.env.SESSION_SECRET || 'bitacora-adr-secret-key',
     resave: false,
     saveUninitialized: false,
     cookie: { 
-        secure: false, // Cambiar a false temporalmente para debugging
+        secure: process.env.NODE_ENV === 'production', // true en producción, false en desarrollo
         maxAge: 24 * 60 * 60 * 1000, // 24 horas
-        httpOnly: true
-    },
-    name: 'bitacora.sid'
+        httpOnly: true,
+        sameSite: 'lax' // Mejorar compatibilidad con navegadores
+    },    name: 'bitacora.sid'
 }));
+
+console.log('✅ [SESSION] SQLite3 Store configurado correctamente');
+
+// Middleware de logging para sesiones (solo en desarrollo)
+if (process.env.NODE_ENV !== 'production') {
+    app.use((req, res, next) => {
+        console.log('📝 [SESSION] Info:', {
+            sessionId: req.sessionID,
+            hasUser: !!req.session.user,
+            url: req.url,
+            method: req.method
+        });
+        next();
+    });
+}
 
 // Middleware para verificar autenticación
 const requireAuth = (req, res, next) => {
@@ -248,6 +278,34 @@ app.post('/debug/create-admin', async (req, res) => {
         });
     } catch (error) {
         console.error('❌ [DEBUG] Error creando admin:', error);
+        res.status(500).json({ 
+            error: error.message,
+            timestamp: new Date().toISOString()
+        });
+    }
+});
+
+// Endpoint de debug para verificar sesiones SQLite
+app.get('/debug/sessions', (req, res) => {
+    try {
+        const sessionInfo = {
+            currentSessionId: req.sessionID,
+            hasUser: !!req.session.user,
+            user: req.session.user ? {
+                id: req.session.user.id,
+                username: req.session.user.username,
+                name: req.session.user.name,
+                role: req.session.user.role
+            } : null,
+            sessionCookie: req.session.cookie,
+            storeType: 'SQLite3Store',
+            timestamp: new Date().toISOString()
+        };
+
+        console.log('🔍 [DEBUG] Info de sesión:', sessionInfo);
+        res.json(sessionInfo);
+    } catch (error) {
+        console.error('❌ [DEBUG] Error consultando sesión:', error);
         res.status(500).json({ 
             error: error.message,
             timestamp: new Date().toISOString()
