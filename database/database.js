@@ -4,7 +4,7 @@ const bcrypt = require('bcryptjs');
 
 // Determinar la ruta de la base de datos según el entorno
 const DB_PATH = process.env.NODE_ENV === 'production' 
-    ? path.join(__dirname, 'bitacora.db')
+    ? '/opt/render/project/src/database/bitacora.db'
     : path.join(__dirname, 'bitacora.db');
 
 class Database {
