@@ -191,6 +191,16 @@ app.get('/', (req, res) => {
     }
 });
 
+// Health check endpoint para Render
+app.get('/healthz', (req, res) => {
+    res.status(200).json({ 
+        status: 'OK', 
+        service: 'Bitácora ADR - Sistema de Ministerio Infantil',
+        timestamp: new Date().toISOString(),
+        environment: process.env.NODE_ENV || 'development'
+    });
+});
+
 // Middleware de manejo de errores
 app.use((error, req, res, next) => {
     console.error('❌ Error no manejado:', error);
