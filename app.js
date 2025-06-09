@@ -155,10 +155,12 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Configurar sesiones con SQLite3 Store
 // Configurar rutas de sesiones con sistema de fallback
-// SOLUCIÓN RENDER: Usar memoria como única opción funcional en plan gratuito
+// SOLUCIÓN RENDER: Priorizar /tmp para persistencia durante sesión
 const SESSION_PATHS = process.env.NODE_ENV === 'production' 
     ? [
-        ':memory:'  // ÚNICA OPCIÓN: Memoria (funciona siempre en Render)
+        '/tmp/sessions.db',  // PRIMERA OPCIÓN: /tmp (persistencia durante sesión)
+        '/opt/render/project/src/database/sessions.db',  // SEGUNDA OPCIÓN: Directorio del proyecto
+        ':memory:'  // FALLBACK: Memoria como último recurso
       ]
     : [path.join(__dirname, 'database', 'sessions.db')];
 
