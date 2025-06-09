@@ -155,11 +155,10 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Configurar sesiones con SQLite3 Store
 // Configurar rutas de sesiones con sistema de fallback
-// PERSISTENCIA FUNCIONAL: Usar /tmp como primera opción (siempre funciona en Render)
+// SOLUCIÓN RENDER: Usar memoria como única opción funcional en plan gratuito
 const SESSION_PATHS = process.env.NODE_ENV === 'production' 
     ? [
-        '/tmp/sessions.db',  // PRIMERO: Directorio temporal (funcional)
-        ':memory:'  // FALLBACK: Memoria (sesiones se pierden)
+        ':memory:'  // ÚNICA OPCIÓN: Memoria (funciona siempre en Render)
       ]
     : [path.join(__dirname, 'database', 'sessions.db')];
 
@@ -375,7 +374,7 @@ app.get('/debug/database', async (req, res) => {
             currentPath: status.currentPath,
             isMemory: status.isMemory,
             healthy: healthy,            availablePaths: process.env.NODE_ENV === 'production' 
-                ? ['/tmp/bitacora.db', ':memory:']
+                ? [':memory:']
                 : ['./database/bitacora.db'],
             timestamp: new Date().toISOString()
         });

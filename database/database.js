@@ -4,11 +4,10 @@ const bcrypt = require('bcryptjs');
 const fs = require('fs');
 
 // Determinar la ruta de la base de datos según el entorno
-// PERSISTENCIA FUNCIONAL: Usar /tmp como primera opción (siempre funciona en Render)
+// SOLUCIÓN RENDER: Usar memoria como única opción funcional en plan gratuito
 const DB_PATHS = process.env.NODE_ENV === 'production' 
     ? [
-        '/tmp/bitacora.db',  // PRIMERO: Directorio temporal (funcional)
-        ':memory:'  // FALLBACK: Memoria (datos se pierden)
+        ':memory:'  // ÚNICA OPCIÓN: Memoria (funciona siempre en Render)
       ]
     : [path.join(__dirname, 'bitacora.db')];
 
