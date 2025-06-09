@@ -150,10 +150,15 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Configurar sesiones
 app.use(session({
-    secret: 'bitacora-adr-secret-key',
+    secret: process.env.SESSION_SECRET || 'bitacora-adr-secret-key',
     resave: false,
     saveUninitialized: false,
-    cookie: { secure: false, maxAge: 24 * 60 * 60 * 1000 } // 24 horas
+    cookie: { 
+        secure: process.env.NODE_ENV === 'production', 
+        maxAge: 24 * 60 * 60 * 1000, // 24 horas
+        httpOnly: true
+    },
+    name: 'bitacora.sid'
 }));
 
 // Middleware para verificar autenticación
@@ -186,12 +191,38 @@ app.get('/', (req, res) => {
     }
 });
 
+// Middleware de manejo de errores
+app.use((error, req, res, next) => {
+    console.error('❌ Error no manejado:', error);
+    
+    if (process.env.NODE_ENV === 'production') {
+        res.status(500).render('error', { 
+            title: 'Error del Servidor',
+            error: 'Ha ocurrido un error interno. Por favor, inténtalo nuevamente.'
+        });
+    } else {
+        res.status(500).json({
+            error: error.message,
+            stack: error.stack
+        });
+    }
+});
+
+// Ruta 404
+app.use((req, res) => {
+    res.status(404).redirect('/auth/login');
+});
+
 // Inicializar base de datos y servidor
 db.initDatabase().then(() => {
-    console.log('Base de datos inicializada correctamente');
+    console.log('✅ Base de datos inicializada correctamente');
     app.listen(PORT, () => {
-        console.log(`Servidor ejecutándose en http://localhost:${PORT}`);
+        console.log(`🚀 Servidor ejecutándose en puerto ${PORT}`);
+        console.log(`🌐 Entorno: ${process.env.NODE_ENV || 'development'}`);
+        console.log(`📱 Aplicación disponible en: ${process.env.NODE_ENV === 'production' ? 'https://bitacora-adr-mecal.onrender.com' : `http://localhost:${PORT}`}`);
     });
 }).catch(error => {
-    console.error('Error al inicializar la base de datos:', error);
+    console.error('❌ Error al inicializar la base de datos:', error);
+    console.error('Stack trace:', error.stack);
+    process.exit(1);
 });

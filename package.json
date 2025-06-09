@@ -1,15 +1,19 @@
 {
   "name": "bitacora_adr",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Sistema de Registro para Ministerio Infantil - Bitácora ADR",
+  "main": "app.js",
   "scripts": {
     "start": "node app.js",
     "dev": "nodemon app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
-  "author": "",
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  },
+  "keywords": ["bitacora", "ministerio", "infantil", "registro", "adr", "mecal"],
+  "author": "Ministerio Mecal",
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {

@@ -2,7 +2,10 @@ const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 const bcrypt = require('bcryptjs');
 
-const DB_PATH = path.join(__dirname, 'bitacora.db');
+// Determinar la ruta de la base de datos según el entorno
+const DB_PATH = process.env.NODE_ENV === 'production' 
+    ? path.join(__dirname, 'bitacora.db')
+    : path.join(__dirname, 'bitacora.db');
 
 class Database {
     constructor() {
@@ -11,11 +14,22 @@ class Database {
 
     connect() {
         return new Promise((resolve, reject) => {
+            // Crear directorio si no existe (importante para producción)
+            const fs = require('fs');
+            const dbDir = path.dirname(DB_PATH);
+            if (!fs.existsSync(dbDir)) {
+                fs.mkdirSync(dbDir, { recursive: true });
+            }
+
             this.db = new sqlite3.Database(DB_PATH, (err) => {
                 if (err) {
+                    console.error('❌ Error conectando a la base de datos:', err);
                     reject(err);
                 } else {
-                    console.log('Conectado a la base de datos SQLite');
+                    console.log('✅ Conectado a la base de datos SQLite en:', DB_PATH);
+                    // Configurar opciones de SQLite para mejor rendimiento
+                    this.db.run('PRAGMA foreign_keys = ON');
+                    this.db.run('PRAGMA journal_mode = WAL');
                     resolve();
                 }
             });

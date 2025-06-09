@@ -1,8 +1,14 @@
 # 📖 Bitácora ADR - Sistema de Registro para Ministerio Infantil
 
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy)
+
 ## 🎯 Descripción
 
 Sistema web desarrollado para el registro y seguimiento de observaciones en el ministerio infantil. Permite a maestros y líderes documentar de manera organizada el comportamiento, desarrollo emocional y espiritual de los niños.
+
+## 🌐 Demo en Vivo
+
+**URL de Producción**: [https://bitacora-adr-mecal.onrender.com](https://bitacora-adr-mecal.onrender.com)
 
 ## ✨ Características Principales
 

@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: bitacora-adr-mecal
+    env: node
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: SESSION_SECRET
+        generateValue: true
+    disk:
+      name: bitacora-disk
+      mountPath: /opt/render/project/src/database
+      sizeGB: 1
