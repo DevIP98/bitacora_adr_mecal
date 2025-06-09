@@ -4,11 +4,17 @@ const bcrypt = require('bcryptjs');
 const fs = require('fs');
 
 // Determinar la ruta de la base de datos según el entorno
-const DB_PATH = process.env.NODE_ENV === 'production' 
+let DB_PATH = process.env.NODE_ENV === 'production' 
     ? '/opt/render/project/src/database/bitacora.db'
     : path.join(__dirname, 'bitacora.db');
 
+// Ruta de respaldo en caso de que el disco persistente falle
+const DB_PATH_FALLBACK = process.env.NODE_ENV === 'production' 
+    ? '/tmp/bitacora.db' 
+    : DB_PATH;
+
 console.log('🗄️ [DATABASE] Configurando base de datos:', DB_PATH);
+console.log('🗄️ [DATABASE] Ruta de respaldo:', DB_PATH_FALLBACK);
 console.log('🌐 [DATABASE] Entorno:', process.env.NODE_ENV || 'development');
 
 class Database {
@@ -16,8 +22,24 @@ class Database {
         this.db = null;
     }    connect() {
         return new Promise((resolve, reject) => {
+            this.tryConnect(DB_PATH).then(resolve).catch((err) => {
+                console.warn('⚠️ [DATABASE] Falló conexión principal, intentando ruta de respaldo...');
+                if (DB_PATH !== DB_PATH_FALLBACK) {
+                    this.tryConnect(DB_PATH_FALLBACK).then(() => {
+                        console.log('✅ [DATABASE] Conectado usando ruta de respaldo');
+                        resolve();
+                    }).catch(reject);
+                } else {
+                    reject(err);
+                }
+            });
+        });
+    }
+
+    tryConnect(dbPath) {
+        return new Promise((resolve, reject) => {
             // Crear directorio si no existe (importante para producción)
-            const dbDir = path.dirname(DB_PATH);
+            const dbDir = path.dirname(dbPath);
             console.log('📁 [DATABASE] Verificando directorio:', dbDir);
             
             try {
@@ -39,18 +61,18 @@ class Database {
                 return;
             }
 
-            console.log('🔄 [DATABASE] Intentando conectar a:', DB_PATH);
-            this.db = new sqlite3.Database(DB_PATH, (err) => {
+            console.log('🔄 [DATABASE] Intentando conectar a:', dbPath);
+            this.db = new sqlite3.Database(dbPath, (err) => {
                 if (err) {
                     console.error('❌ [DATABASE] Error conectando a la base de datos:', {
                         error: err.message,
                         code: err.code,
                         errno: err.errno,
-                        path: DB_PATH
+                        path: dbPath
                     });
                     reject(err);
                 } else {
-                    console.log('✅ [DATABASE] Conectado a la base de datos SQLite en:', DB_PATH);
+                    console.log('✅ [DATABASE] Conectado a la base de datos SQLite en:', dbPath);
                     // Configurar opciones de SQLite para mejor rendimiento
                     this.db.run('PRAGMA foreign_keys = ON');
                     this.db.run('PRAGMA journal_mode = WAL');

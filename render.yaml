@@ -2,7 +2,7 @@ services:
   - type: web
     name: bitacora-adr-mecal
     runtime: node
-    buildCommand: npm install && npm rebuild sqlite3 && mkdir -p /opt/render/project/src/database
+    buildCommand: npm install && npm rebuild sqlite3 && mkdir -p /opt/render/project/src/database && chmod 755 /opt/render/project/src/database
     startCommand: npm start
     envVars:
       - key: NODE_ENV
