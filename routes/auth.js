@@ -15,23 +15,46 @@ router.get('/login', (req, res) => {
 
 // Procesar login
 router.post('/login', async (req, res) => {
-    try {
-        const { username, password } = req.body;
+    const { username, password } = req.body;
+    
+    console.log('🔍 [LOGIN] Intento de login:', { 
+        username, 
+        password: password ? '***' : 'undefined',
+        sessionId: req.sessionID,
+        timestamp: new Date().toISOString()
+    });
 
+    try {
         if (!username || !password) {
-            return res.redirect('/auth/login?error=Por favor ingrese usuario y contraseña');
+            console.log('❌ [LOGIN] Datos faltantes');
+            return res.render('auth/login', { 
+                title: 'Iniciar Sesión - Bitácora ADR',
+                error: 'Por favor ingrese usuario y contraseña' 
+            });
         }
 
+        console.log('🔍 [LOGIN] Buscando usuario en base de datos...');
         const user = await db.getUserByUsername(username);
+        console.log('🔍 [LOGIN] Usuario encontrado:', user ? 'SÍ' : 'NO');
         
         if (!user) {
-            return res.redirect('/auth/login?error=Usuario no encontrado');
+            console.log('❌ [LOGIN] Usuario no encontrado:', username);
+            return res.render('auth/login', { 
+                title: 'Iniciar Sesión - Bitácora ADR',
+                error: 'Usuario o contraseña incorrectos' 
+            });
         }
 
+        console.log('🔍 [LOGIN] Verificando contraseña...');
         const isValidPassword = await bcrypt.compare(password, user.password);
-        
+        console.log('🔍 [LOGIN] Contraseña válida:', isValidPassword);
+
         if (!isValidPassword) {
-            return res.redirect('/auth/login?error=Contraseña incorrecta');
+            console.log('❌ [LOGIN] Contraseña incorrecta para usuario:', username);
+            return res.render('auth/login', { 
+                title: 'Iniciar Sesión - Bitácora ADR',
+                error: 'Usuario o contraseña incorrectos' 
+            });
         }
 
         // Crear sesión
@@ -42,10 +65,32 @@ router.post('/login', async (req, res) => {
             role: user.role
         };
 
-        res.redirect('/dashboard');
+        console.log('✅ [LOGIN] Sesión creada exitosamente:', {
+            userId: user.id,
+            username: user.username,
+            sessionId: req.sessionID
+        });
+
+        // Forzar guardado de sesión
+        req.session.save((err) => {
+            if (err) {
+                console.error('❌ [LOGIN] Error guardando sesión:', err);
+                return res.render('auth/login', { 
+                    title: 'Iniciar Sesión - Bitácora ADR',
+                    error: 'Error interno del servidor' 
+                });
+            }
+            
+            console.log('✅ [LOGIN] Sesión guardada, redirigiendo a dashboard');
+            res.redirect('/dashboard');
+        });
+
     } catch (error) {
-        console.error('Error en login:', error);
-        res.redirect('/auth/login?error=Error interno del servidor');
+        console.error('❌ [LOGIN] Error en proceso de login:', error);
+        res.render('auth/login', { 
+            title: 'Iniciar Sesión - Bitácora ADR',
+            error: 'Error interno del servidor' 
+        });
     }
 });
 

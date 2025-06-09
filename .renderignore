@@ -1,0 +1,13 @@
+# Ignorar archivos de desarrollo local
+node_modules/
+*.log
+.env
+.DS_Store
+*.tmp
+*.temp
+
+# Mantener la estructura de directorios
+!database/
+!public/
+!views/
+!routes/

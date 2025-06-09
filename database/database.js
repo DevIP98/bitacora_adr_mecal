@@ -172,16 +172,81 @@ class Database {
                 reject(error);
             }
         });
-    }
-
-    // Métodos para usuarios
+    }    // Métodos para usuarios
     getUserByUsername(username) {
         return new Promise((resolve, reject) => {
-            this.db.get("SELECT * FROM users WHERE username = ?", [username], (err, row) => {
-                if (err) reject(err);
-                else resolve(row);
+            console.log('🔍 [DB] Buscando usuario en base de datos:', username);
+            
+            const query = "SELECT * FROM users WHERE username = ?";
+            this.db.get(query, [username], (err, row) => {
+                if (err) {
+                    console.error('❌ [DB] Error consultando usuario:', err);
+                    reject(err);
+                } else {
+                    console.log('🔍 [DB] Resultado consulta usuario:', row ? 'ENCONTRADO' : 'NO ENCONTRADO');
+                    if (row) {
+                        console.log('🔍 [DB] Datos usuario:', {
+                            id: row.id,
+                            username: row.username,
+                            name: row.name,
+                            role: row.role,
+                            hasPassword: !!row.password,
+                            passwordLength: row.password ? row.password.length : 0
+                        });
+                    }
+                    resolve(row);
+                }
             });
         });
+    }
+
+    // Método para obtener todos los usuarios (debug)
+    getAllUsers() {
+        return new Promise((resolve, reject) => {
+            const query = "SELECT id, username, name, role, created_at FROM users ORDER BY created_at DESC";
+            this.db.all(query, [], (err, rows) => {
+                if (err) {
+                    console.error('❌ [DB] Error obteniendo usuarios:', err);
+                    reject(err);
+                } else {
+                    console.log('🔍 [DB] Total usuarios en base de datos:', rows.length);
+                    resolve(rows);
+                }
+            });
+        });
+    }
+
+    // Método para crear usuario admin de emergencia
+    async createEmergencyAdmin() {
+        try {
+            // Verificar si ya existe un admin
+            console.log('🔍 [DB] Verificando usuario admin...');
+            const existingAdmin = await this.getUserByUsername('admin');
+            
+            if (!existingAdmin) {
+                console.log('🔧 [DB] Creando usuario admin de emergencia...');
+                
+                const hashedPassword = await bcrypt.hash('admin123', 10);
+                console.log('🔍 [DB] Password hasheado, longitud:', hashedPassword.length);
+                
+                await new Promise((resolve, reject) => {
+                    const query = "INSERT INTO users (username, password, name, role) VALUES (?, ?, ?, ?)";
+                    this.db.run(query, ['admin', hashedPassword, 'Administrador', 'admin'], function(err) {
+                        if (err) {
+                            console.error('❌ [DB] Error creando usuario admin:', err);
+                            reject(err);
+                        } else {
+                            console.log('✅ [DB] Usuario admin creado con ID:', this.lastID);
+                            resolve(this.lastID);
+                        }
+                    });
+                });
+            } else {
+                console.log('ℹ️ [DB] Usuario admin ya existe con ID:', existingAdmin.id);
+            }
+        } catch (error) {
+            console.error('❌ [DB] Error en createEmergencyAdmin:', error);
+        }
     }
 
     createUser(userData) {
