@@ -154,11 +154,12 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Configurar sesiones con SQLite3 Store
 // Configurar rutas de sesiones con sistema de fallback
+// EMERGENCY HOTFIX: Usar memoria PRIMERO para garantizar funcionamiento
 const SESSION_PATHS = process.env.NODE_ENV === 'production' 
     ? [
-        '/tmp/sessions.db',  // Intentar /tmp primero
-        '/opt/render/project/src/database/sessions.db',  // Luego disco persistente
-        ':memory:'  // Como último recurso, usar memoria (MemoryStore)
+        ':memory:',  // PRIMERO: Usar memoria para garantizar funcionamiento
+        '/tmp/sessions.db',  // Luego intentar /tmp
+        '/opt/render/project/src/database/sessions.db'  // Finalmente disco persistente
       ]
     : [path.join(__dirname, 'database', 'sessions.db')];
 
