@@ -4,6 +4,7 @@ const bodyParser = require('body-parser');
 const session = require('express-session');
 const path = require('path');
 const moment = require('moment');
+const fs = require('fs');
 
 // Configurar SQLite3 como store de sesiones
 const SQLiteStore = require('connect-sqlite3')(session);
@@ -158,12 +159,27 @@ const sessionDbPath = process.env.NODE_ENV === 'production'
 
 console.log('🗄️ [SESSION] Configurando SQLite3 Store:', sessionDbPath);
 
+// Crear directorio de sesiones si no existe
+const sessionDir = path.dirname(sessionDbPath);
+try {
+    if (!fs.existsSync(sessionDir)) {
+        console.log('📁 [SESSION] Creando directorio de sesiones:', sessionDir);
+        fs.mkdirSync(sessionDir, { recursive: true });
+        console.log('✅ [SESSION] Directorio creado exitosamente');
+    } else {
+        console.log('✅ [SESSION] Directorio de sesiones ya existe');
+    }
+} catch (error) {
+    console.error('❌ [SESSION] Error creando directorio:', error);
+}
+
 app.use(session({
     store: new SQLiteStore({
         db: sessionDbPath,
         table: 'sessions', // Nombre de la tabla donde se guardarán las sesiones
-        dir: path.dirname(sessionDbPath), // Directorio donde se creará la base de datos
-        concurrentDB: true // Permitir conexiones concurrentes
+        dir: sessionDir, // Directorio donde se creará la base de datos
+        concurrentDB: true, // Permitir conexiones concurrentes
+        timeout: 30000 // Timeout de 30 segundos para operaciones SQLite
     }),
     secret: process.env.SESSION_SECRET || 'bitacora-adr-secret-key',
     resave: false,
