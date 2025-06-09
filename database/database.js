@@ -88,11 +88,32 @@ class Database {
 
                     // Verificar permisos de escritura en el directorio
                     fs.accessSync(dbDir, fs.constants.W_OK);
-                    console.log('✅ [DATABASE] Permisos de escritura verificados');
+                    console.log('✅ [DATABASE] Permisos de escritura verificados para el directorio');
 
-                } catch (dirError) {
-                    console.error('❌ [DATABASE] Error con directorio:', dirError);
-                    reject(dirError);
+                    // >>> INICIO NUEVO BLOQUE DE DEPURACIÓN DE ARCHIVO <<<<<
+                    console.log(`📁 [DATABASE] Verificando archivo específico: ${dbPath}`);
+                    if (fs.existsSync(dbPath)) {
+                        console.log('✅ [DATABASE] Archivo existe:', dbPath);
+                        try {
+                            fs.accessSync(dbPath, fs.constants.R_OK | fs.constants.W_OK);
+                            console.log('✅ [DATABASE] Archivo tiene permisos de lectura/escritura.');
+                        } catch (fileAccessError) {
+                            console.error(`❌ [DATABASE] Error de acceso al archivo ${dbPath} (R_OK | W_OK):`, fileAccessError.message);
+                            try {
+                                const stats = fs.statSync(dbPath);
+                                console.log(`ℹ️ [DATABASE] Estadísticas del archivo ${dbPath}: mode=${stats.mode.toString(8)}, uid=${stats.uid}, gid=${stats.gid}`);
+                            } catch (statErr) {
+                                console.error(`❌ [DATABASE] Error obteniendo estadísticas del archivo ${dbPath}:`, statErr.message);
+                            }
+                        }
+                    } else {
+                        console.log('ℹ️ [DATABASE] Archivo no existe, se intentará crear por SQLite:', dbPath);
+                    }
+                    // >>> FIN NUEVO BLOQUE DE DEPURACIÓN DE ARCHIVO <<<<<
+
+                } catch (dirOrFileError) {
+                    console.error('❌ [DATABASE] Error con directorio o archivo:', dirOrFileError);
+                    reject(dirOrFileError);
                     return;
                 }
             }
