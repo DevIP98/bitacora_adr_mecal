@@ -2,7 +2,7 @@ services:
   - type: web
     name: bitacora-adr-mecal
     runtime: node
-    buildCommand: "npm install && npm rebuild sqlite3 && mkdir -p /opt/render/project/src/database && chmod 777 /opt/render/project/src/database && touch /opt/render/project/src/database/bitacora.db /opt/render/project/src/database/render_fresh_test.db && chmod 666 /opt/render/project/src/database/*.db && ls -la /opt/render/project/src/database/"
+    buildCommand: "npm install"
     startCommand: npm start
     envVars:
       - key: NODE_ENV
@@ -10,8 +10,12 @@ services:
       - key: SESSION_SECRET
         generateValue: true
       - key: DATABASE_URL
-        value: sqlite:///opt/render/project/src/database/bitacora.db
-    disk:
-      name: bitacora-disk
-      mountPath: /opt/render/project/src/database
-      sizeGB: 1
+        fromDatabase:
+          name: bitacora-postgres
+          property: connectionString
+  
+  - type: postgres
+    name: bitacora-postgres
+    ipAllowList: []
+    plan: free
+    postgresMajorVersion: 15

@@ -2,6 +2,7 @@ const express = require('express');
 const exphbs = require('express-handlebars');
 const bodyParser = require('body-parser');
 const session = require('express-session');
+const pgSession = require('connect-pg-simple')(session);
 const path = require('path');
 const moment = require('moment');
 const fs = require('fs');
@@ -84,17 +85,15 @@ function diagnosisFilesystem() {
 // Ejecutar diagnóstico al inicio
 diagnosisFilesystem();
 
-// Configurar SQLite3 como store de sesiones
-const SQLiteStore = require('connect-sqlite3')(session);
-
+// Configurar PostgreSQL como store de sesiones
 // Importar rutas
 const authRoutes = require('./routes/auth');
 const dashboardRoutes = require('./routes/dashboard');
 const childrenRoutes = require('./routes/children');
 const observationsRoutes = require('./routes/observations');
 
-// Inicializar la base de datos
-const db = require('./database/database');
+// Inicializar la base de datos PostgreSQL
+const db = require('./database/pg-database');
 const BackupManager = require('./database/backup');
 
 const app = express();
@@ -231,58 +230,35 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Configurar sesiones con SQLite3 Store
-// Configurar rutas de sesiones con sistema de fallback
-// SOLUCIÓN RENDER: Priorizar /tmp para persistencia durante sesión
-const SESSION_PATHS = process.env.NODE_ENV === 'production' 
-    ? [
-        '/tmp/sessions.db',  // PRIMERA OPCIÓN: /tmp (persistencia durante sesión)
-        '/opt/render/project/src/database/sessions.db',  // SEGUNDA OPCIÓN: Directorio del proyecto
-        ':memory:'  // FALLBACK: Memoria como último recurso
-      ]
-    : [path.join(__dirname, 'database', 'sessions.db')];
+// Configurar sesiones con PostgreSQL Store
+console.log('🔄 [SESSION] Configurando store de sesiones con PostgreSQL');
 
-console.log('🗄️ [SESSION] Rutas de sesiones disponibles:', SESSION_PATHS);
-
-// Función para crear store de sesiones con fallback
+// Crear store de sesiones con PostgreSQL
 function createSessionStore() {
-    for (let i = 0; i < SESSION_PATHS.length; i++) {
-        const sessionPath = SESSION_PATHS[i];
-        console.log(`🔄 [SESSION] Intentando configurar store ${i + 1}/${SESSION_PATHS.length}: ${sessionPath}`);
+    try {
+        console.log('🔄 [SESSION] Intentando configurar pgSessionStore');
         
-        try {
-            if (sessionPath === ':memory:') {
-                console.log('⚠️ [SESSION] Usando MemoryStore como fallback');
-                return null; // Retornar null para usar el MemoryStore por defecto
-            }
-            
-            // Crear directorio si no existe
-            const sessionDir = path.dirname(sessionPath);
-            if (!fs.existsSync(sessionDir)) {
-                console.log('📁 [SESSION] Creando directorio:', sessionDir);
-                fs.mkdirSync(sessionDir, { recursive: true });
-            }
-            
-            // Verificar permisos de escritura
-            fs.accessSync(sessionDir, fs.constants.W_OK);
-            
-            console.log(`✅ [SESSION] Configurando SQLite3 Store en: ${sessionPath}`);
-            return new SQLiteStore({
-                db: sessionPath,
-                table: 'sessions',
-                dir: sessionDir,
-                concurrentDB: true,
-                timeout: 30000
-            });
-            
-        } catch (error) {
-            console.warn(`⚠️ [SESSION] Falló configuración en ${sessionPath}:`, error.message);
-            continue;
-        }
+        // Para entorno de desarrollo, permite conectar a una base local 
+        // Para producción, usa la URL proporcionada por Render
+        const connectionString = process.env.DATABASE_URL || 'postgres://postgres:postgres@localhost:5432/bitacora';
+        
+        console.log(`✅ [SESSION] Usando conexión para sesiones: ${connectionString.split('@')[0].replace(/:[^:]*@/, ':***@')}`);
+        
+        // Configurar PgSessionStore
+        return new pgSession({
+            conObject: {
+                connectionString,
+                ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
+            },
+            tableName: 'session',
+            createTableIfMissing: true
+        });
+        
+    } catch (error) {
+        console.warn('⚠️ [SESSION] Falló configuración de pgSessionStore:', error.message);
+        console.log('⚠️ [SESSION] Usando MemoryStore como fallback');
+        return null; // Usar MemoryStore como fallback
     }
-    
-    console.log('⚠️ [SESSION] Todas las rutas fallaron, usando MemoryStore');
-    return null;
 }
 
 const sessionStore = createSessionStore();
@@ -301,7 +277,7 @@ app.use(session({
     name: 'bitacora.sid'
 }));
 
-console.log('✅ [SESSION] Store configurado:', sessionStore ? 'SQLite3Store' : 'MemoryStore (fallback)');
+console.log('✅ [SESSION] Store configurado:', sessionStore ? 'PostgreSQL Store' : 'MemoryStore (fallback)');
 
 // Middleware de logging para sesiones (habilitado también en producción para debugging)
 app.use((req, res, next) => {

@@ -1,6 +1,6 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
-const db = require('../database/database');
+const db = require('../database/pg-database');
 
 const router = express.Router();
 

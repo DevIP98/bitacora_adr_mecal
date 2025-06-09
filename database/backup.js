@@ -1,8 +1,10 @@
 // Sistema de Backup Automático para Bitácora ADR
+// Versión adaptada para PostgreSQL
 // Mantiene respaldos en /tmp para recuperación entre deploys
 
 const fs = require('fs');
 const path = require('path');
+const { Pool } = require('pg');
 
 class BackupManager {
     constructor(db) {
@@ -18,9 +20,8 @@ class BackupManager {
             console.log('⚠️ [BACKUP] Sistema ya en ejecución');
             return;
         }
-        
-        this.isRunning = true;
-        console.log('🔄 [BACKUP] Iniciando sistema de backup automático cada 30 minutos');
+          this.isRunning = true;
+        console.log('🔄 [BACKUP] Iniciando sistema de backup automático cada 30 minutos (PostgreSQL)');
         
         try {
             // Backup inicial
@@ -56,10 +57,9 @@ class BackupManager {
             const backupData = {
                 users: users || [],
                 children: children || [],
-                observations: observations || [],
-                metadata: {
+                observations: observations || [],                metadata: {
                     timestamp: new Date().toISOString(),
-                    version: '1.0',
+                    version: '1.0.1-pg',
                     totalRecords: (users?.length || 0) + (children?.length || 0) + (observations?.length || 0)
                 }
             };
@@ -67,8 +67,7 @@ class BackupManager {
             // Guardar backup en archivo
             await this.writeBackupFile(backupData);
             
-            console.log(`✅ [BACKUP] Backup creado: ${backupData.users.length} usuarios, ${backupData.children.length} niños, ${backupData.observations.length} observaciones`);
-            
+            console.log(`✅ [BACKUP] Backup creado (PostgreSQL): ${backupData.users.length} usuarios, ${backupData.children.length} niños, ${backupData.observations.length} observaciones`);
             return backupData;
         } catch (error) {
             console.error('❌ [BACKUP] Error creando backup:', error.message);

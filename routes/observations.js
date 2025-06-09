@@ -1,5 +1,5 @@
 const express = require('express');
-const db = require('../database/database');
+const db = require('../database/pg-database');
 
 const router = express.Router();
 
