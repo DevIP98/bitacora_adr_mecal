@@ -4,12 +4,12 @@ const bcrypt = require('bcryptjs');
 const fs = require('fs');
 
 // Determinar la ruta de la base de datos según el entorno
-// EMERGENCY HOTFIX: Usar memoria PRIMERO en producción para garantizar funcionamiento
+// PERSISTENCIA PRIORITARIA: Usar disco persistente PRIMERO para mantener datos entre deploys
 const DB_PATHS = process.env.NODE_ENV === 'production' 
     ? [
-        ':memory:',  // PRIMERO: Usar memoria para garantizar funcionamiento
-        '/tmp/bitacora.db',  // Luego intentar /tmp
-        '/opt/render/project/src/database/bitacora.db'  // Finalmente disco persistente
+        '/opt/render/project/src/database/bitacora.db',  // PRIMERO: Disco persistente
+        '/tmp/bitacora.db',  // Backup: Directorio temporal
+        ':memory:'  // ÚLTIMO RECURSO: Memoria (datos se pierden)
       ]
     : [path.join(__dirname, 'bitacora.db')];
 
