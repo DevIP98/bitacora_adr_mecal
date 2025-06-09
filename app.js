@@ -153,11 +153,12 @@ app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Configurar sesiones con SQLite3 Store
+// TEMPORAL: Usar /tmp en producción hasta resolver problema del disco persistente
 const sessionDbPath = process.env.NODE_ENV === 'production' 
-    ? '/opt/render/project/src/database/sessions.db'
+    ? '/tmp/sessions.db'  // Usar /tmp temporalmente
     : path.join(__dirname, 'database', 'sessions.db');
 
-console.log('🗄️ [SESSION] Configurando SQLite3 Store:', sessionDbPath);
+console.log('🗄️ [SESSION] Configurando SQLite3 Store (TEMPORAL /tmp):', sessionDbPath);
 
 // Crear directorio de sesiones si no existe
 const sessionDir = path.dirname(sessionDbPath);

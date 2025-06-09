@@ -4,16 +4,17 @@ const bcrypt = require('bcryptjs');
 const fs = require('fs');
 
 // Determinar la ruta de la base de datos según el entorno
+// TEMPORAL: Usar /tmp en producción hasta resolver problema del disco persistente
 let DB_PATH = process.env.NODE_ENV === 'production' 
-    ? '/opt/render/project/src/database/bitacora.db'
+    ? '/tmp/bitacora.db'  // Usar /tmp temporalmente
     : path.join(__dirname, 'bitacora.db');
 
 // Ruta de respaldo en caso de que el disco persistente falle
 const DB_PATH_FALLBACK = process.env.NODE_ENV === 'production' 
-    ? '/tmp/bitacora.db' 
+    ? '/opt/render/project/src/database/bitacora.db'  // Intercambiar las rutas
     : DB_PATH;
 
-console.log('🗄️ [DATABASE] Configurando base de datos:', DB_PATH);
+console.log('🗄️ [DATABASE] Configurando base de datos (TEMPORAL /tmp):', DB_PATH);
 console.log('🗄️ [DATABASE] Ruta de respaldo:', DB_PATH_FALLBACK);
 console.log('🌐 [DATABASE] Entorno:', process.env.NODE_ENV || 'development');
 
@@ -59,9 +60,7 @@ class Database {
                 console.error('❌ [DATABASE] Error con directorio:', dirError);
                 reject(dirError);
                 return;
-            }
-
-            console.log('🔄 [DATABASE] Intentando conectar a:', dbPath);
+            }            console.log('🔄 [DATABASE] Intentando conectar a:', dbPath);
             this.db = new sqlite3.Database(dbPath, (err) => {
                 if (err) {
                     console.error('❌ [DATABASE] Error conectando a la base de datos:', {
@@ -78,6 +77,12 @@ class Database {
                     this.db.run('PRAGMA journal_mode = WAL');
                     resolve();
                 }
+            });
+
+            // Manejar eventos de error no capturados
+            this.db.on('error', (err) => {
+                console.error('❌ [DATABASE] Evento de error SQLite:', err);
+                reject(err);
             });
         });
     }
