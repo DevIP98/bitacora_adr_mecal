@@ -6,6 +6,84 @@ const path = require('path');
 const moment = require('moment');
 const fs = require('fs');
 
+// Función de diagnóstico para entorno de Render
+function diagnosisFilesystem() {
+    console.log('🔍 [DIAGNOSIS] Iniciando diagnóstico del sistema de archivos...');
+    console.log('🔍 [DIAGNOSIS] NODE_ENV:', process.env.NODE_ENV);
+    
+    const testPaths = [
+        '/tmp',
+        '/opt/render/project/src',
+        '/opt/render/project/src/database',
+        process.cwd(),
+        path.join(process.cwd(), 'database')
+    ];
+    
+    testPaths.forEach(testPath => {
+        try {
+            console.log(`\n🔍 [DIAGNOSIS] Verificando directorio: ${testPath}`);
+            
+            // Verificar si existe
+            const exists = fs.existsSync(testPath);
+            console.log(`🔍 [DIAGNOSIS] ¿Existe?: ${exists}`);
+            
+            if (exists) {
+                // Verificar permisos
+                try {
+                    fs.accessSync(testPath, fs.constants.R_OK | fs.constants.W_OK);
+                    console.log(`✅ [DIAGNOSIS] Permisos R/W: OK`);
+                } catch (e) {
+                    console.log(`❌ [DIAGNOSIS] Permisos R/W: FALLÓ - ${e.message}`);
+                }
+                
+                // Verificar si es directorio
+                try {
+                    const stats = fs.statSync(testPath);
+                    console.log(`🔍 [DIAGNOSIS] Es directorio: ${stats.isDirectory()}`);
+                    console.log(`🔍 [DIAGNOSIS] Modo permisos: ${stats.mode.toString(8)}`);
+                    console.log(`🔍 [DIAGNOSIS] UID/GID: ${stats.uid}/${stats.gid}`);
+                } catch (e) {
+                    console.log(`❌ [DIAGNOSIS] Error obteniendo stats: ${e.message}`);
+                }
+                
+                // Listar contenido
+                try {
+                    const files = fs.readdirSync(testPath);
+                    console.log(`🔍 [DIAGNOSIS] ${files.length} archivos en directorio`);
+                } catch (e) {
+                    console.log(`❌ [DIAGNOSIS] Error listando directorio: ${e.message}`);
+                }
+                
+                // Prueba de escritura
+                if (testPath !== '/opt/render/project/src') { // No escribir en raíz del proyecto
+                    const testFile = path.join(testPath, 'diagnosis_test.txt');
+                    try {
+                        fs.writeFileSync(testFile, `Test escritura: ${new Date().toISOString()}`);
+                        console.log(`✅ [DIAGNOSIS] Escritura exitosa en: ${testFile}`);
+                        
+                        // Prueba de lectura
+                        const content = fs.readFileSync(testFile, 'utf8');
+                        console.log(`✅ [DIAGNOSIS] Lectura exitosa: ${content.substring(0, 20)}...`);
+                        
+                        // Limpiar
+                        fs.unlinkSync(testFile);
+                        console.log(`✅ [DIAGNOSIS] Archivo de prueba eliminado`);
+                    } catch (e) {
+                        console.log(`❌ [DIAGNOSIS] Error en prueba IO: ${e.message}`);
+                    }
+                }
+            }
+        } catch (error) {
+            console.log(`❌ [DIAGNOSIS] Error general: ${error.message}`);
+        }
+    });
+    
+    console.log('\n🔍 [DIAGNOSIS] Diagnóstico finalizado\n');
+}
+
+// Ejecutar diagnóstico al inicio
+diagnosisFilesystem();
+
 // Configurar SQLite3 como store de sesiones
 const SQLiteStore = require('connect-sqlite3')(session);
 
