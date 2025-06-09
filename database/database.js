@@ -7,7 +7,8 @@ const fs = require('fs');
 // CONFIGURACIÓN RENDER: Usar ruta persistente primero, luego /tmp, luego memoria
 const DB_PATHS = process.env.NODE_ENV === 'production' 
     ? [
-        '/opt/render/project/src/database/bitacora.db',   // Primera opción: ruta persistente
+        '/opt/render/project/src/database/render_fresh_test.db', // Intentar primero con un nombre de archivo nuevo
+        '/opt/render/project/src/database/bitacora.db',   // Luego la ruta persistente original
         '/tmp/bitacora.db',                              // Segunda opción: /tmp (temporal)
         ':memory:'                                       // Última opción: memoria (fallback)
       ]
