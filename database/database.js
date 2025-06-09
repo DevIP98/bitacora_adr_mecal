@@ -4,12 +4,12 @@ const bcrypt = require('bcryptjs');
 const fs = require('fs');
 
 // Determinar la ruta de la base de datos según el entorno
-// CONFIGURACIÓN RENDER: Usar /tmp que mantiene datos durante sesión en plan gratuito
+// CONFIGURACIÓN RENDER: Usar ruta persistente primero, luego /tmp, luego memoria
 const DB_PATHS = process.env.NODE_ENV === 'production' 
     ? [
-        '/tmp/bitacora.db',                                // Primera opción: /tmp (mantiene datos)
-        '/opt/render/project/src/database/bitacora.db',   // Segunda opción: ruta persistente
-        ':memory:'                                        // Última opción: memoria (fallback)
+        '/opt/render/project/src/database/bitacora.db',   // Primera opción: ruta persistente
+        '/tmp/bitacora.db',                              // Segunda opción: /tmp (temporal)
+        ':memory:'                                       // Última opción: memoria (fallback)
       ]
     : [path.join(__dirname, 'bitacora.db')];
 
