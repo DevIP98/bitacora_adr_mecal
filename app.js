@@ -17,6 +17,7 @@ const observationsRoutes = require('./routes/observations');
 
 // Inicializar la base de datos
 const db = require('./database/database');
+const BackupManager = require('./database/backup');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -154,12 +155,11 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Configurar sesiones con SQLite3 Store
 // Configurar rutas de sesiones con sistema de fallback
-// PERSISTENCIA PRIORITARIA: Usar disco persistente PRIMERO para mantener sesiones entre deploys
+// PERSISTENCIA FUNCIONAL: Usar /tmp como primera opción (siempre funciona en Render)
 const SESSION_PATHS = process.env.NODE_ENV === 'production' 
     ? [
-        '/opt/render/project/src/database/sessions.db',  // PRIMERO: Disco persistente
-        '/tmp/sessions.db',  // Backup: Directorio temporal
-        ':memory:'  // ÚLTIMO RECURSO: Memoria (sesiones se pierden)
+        '/tmp/sessions.db',  // PRIMERO: Directorio temporal (funcional)
+        ':memory:'  // FALLBACK: Memoria (sesiones se pierden)
       ]
     : [path.join(__dirname, 'database', 'sessions.db')];
 
@@ -374,9 +374,8 @@ app.get('/debug/database', async (req, res) => {
             connected: status.connected,
             currentPath: status.currentPath,
             isMemory: status.isMemory,
-            healthy: healthy,
-            availablePaths: process.env.NODE_ENV === 'production' 
-                ? ['/opt/render/project/src/database/bitacora.db', '/tmp/bitacora.db', ':memory:']
+            healthy: healthy,            availablePaths: process.env.NODE_ENV === 'production' 
+                ? ['/tmp/bitacora.db', ':memory:']
                 : ['./database/bitacora.db'],
             timestamp: new Date().toISOString()
         });
@@ -384,6 +383,67 @@ app.get('/debug/database', async (req, res) => {
         res.status(500).json({
             error: 'Error checking database status',
             details: error.message,
+            timestamp: new Date().toISOString()
+        });
+    }
+});
+
+// Endpoint de debug para verificar backup
+app.get('/debug/backup', async (req, res) => {
+    try {
+        if (process.env.NODE_ENV !== 'production' || !global.backupManager) {
+            return res.json({
+                error: 'Backup manager no disponible',
+                environment: process.env.NODE_ENV || 'development',
+                timestamp: new Date().toISOString()
+            });
+        }
+
+        const backupInfo = global.backupManager.getBackupInfo();
+        
+        res.json({
+            status: 'Backup System Information',
+            backupInfo: backupInfo,
+            timestamp: new Date().toISOString()
+        });
+    } catch (error) {
+        res.status(500).json({
+            error: 'Error checking backup status',
+            details: error.message,
+            timestamp: new Date().toISOString()
+        });
+    }
+});
+
+// Endpoint para forzar backup manual
+app.post('/debug/backup/create', async (req, res) => {
+    try {
+        if (process.env.NODE_ENV !== 'production' || !global.backupManager) {
+            return res.json({
+                error: 'Backup manager no disponible',
+                environment: process.env.NODE_ENV || 'development',
+                timestamp: new Date().toISOString()
+            });
+        }
+
+        console.log('🔧 [DEBUG] Forzando backup manual...');
+        const backupData = await global.backupManager.createBackup();
+        
+        res.json({
+            success: true,
+            message: 'Backup creado manualmente',
+            data: {
+                users: backupData.users.length,
+                children: backupData.children.length,
+                observations: backupData.observations.length,
+                total: backupData.metadata.totalRecords
+            },
+            timestamp: new Date().toISOString()
+        });
+    } catch (error) {
+        console.error('❌ [DEBUG] Error creando backup:', error);
+        res.status(500).json({
+            error: error.message,
             timestamp: new Date().toISOString()
         });
     }
@@ -420,6 +480,24 @@ db.initDatabase().then(async () => {
     console.log('🔧 Verificando/creando usuario administrador...');
     await db.createEmergencyAdmin();
     
+    // Inicializar sistema de backup en producción
+    if (process.env.NODE_ENV === 'production') {
+        console.log('🔄 [BACKUP] Iniciando sistema de backup automático...');
+        const backupManager = new BackupManager(db);
+        
+        // Intentar restaurar desde backup existente
+        const backupRestored = await backupManager.restoreFromBackup();
+        if (backupRestored) {
+            console.log('📥 [BACKUP] Información de backup anterior disponible');
+        }
+        
+        // Iniciar backup automático
+        await backupManager.startPeriodicBackup();
+        
+        // Hacer el backup manager global para usar en endpoints
+        global.backupManager = backupManager;
+    }
+    
     startServer();
 }).catch(error => {
     console.error('❌ Error al inicializar la base de datos:', error);
@@ -434,7 +512,17 @@ db.initDatabase().then(async () => {
         startServer();
     } else {
         console.error('💀 [FATAL] No se pudo establecer ninguna conexión de base de datos');
-        process.exit(1);
+        console.log('🔄 [FATAL] Intentando último recurso con memoria...');
+        
+        // Último intento: forzar conexión en memoria
+        try {
+            db.db = new (require('sqlite3').Database)(':memory:');
+            console.log('⚠️ [FALLBACK] Usando base de datos en memoria como último recurso');
+            startServer();
+        } catch (memoryError) {
+            console.error('💀 [FATAL] Fallo total:', memoryError);
+            process.exit(1);
+        }
     }
 });
 
@@ -443,10 +531,14 @@ function startServer() {
         console.log(`🚀 Servidor ejecutándose en puerto ${PORT}`);
         console.log(`🌐 Entorno: ${process.env.NODE_ENV || 'development'}`);
         console.log(`📊 [DATABASE] Base de datos activa en: ${db.currentDbPath || 'desconocida'}`);
+        console.log(`💾 [BACKUP] Sistema: ${global.backupManager ? 'activo' : 'desactivado'}`);
         console.log(`📱 Aplicación disponible en: ${process.env.NODE_ENV === 'production' ? 'https://bitacora-adr-mecal.onrender.com' : `http://localhost:${PORT}`}`);
         console.log(`👤 Credenciales: admin / admin123`);
         console.log(`🔍 Debug endpoints:`);
         console.log(`   - GET /debug/users - Ver usuarios registrados`);
+        console.log(`   - GET /debug/database - Estado de base de datos`);
+        console.log(`   - GET /debug/backup - Estado del sistema de backup`);
         console.log(`   - POST /debug/create-admin - Crear usuario admin`);
+        console.log(`   - POST /debug/backup/create - Crear backup manual`);
     });
 }

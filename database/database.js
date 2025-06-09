@@ -4,12 +4,11 @@ const bcrypt = require('bcryptjs');
 const fs = require('fs');
 
 // Determinar la ruta de la base de datos según el entorno
-// PERSISTENCIA PRIORITARIA: Usar disco persistente PRIMERO para mantener datos entre deploys
+// PERSISTENCIA FUNCIONAL: Usar /tmp como primera opción (siempre funciona en Render)
 const DB_PATHS = process.env.NODE_ENV === 'production' 
     ? [
-        '/opt/render/project/src/database/bitacora.db',  // PRIMERO: Disco persistente
-        '/tmp/bitacora.db',  // Backup: Directorio temporal
-        ':memory:'  // ÚLTIMO RECURSO: Memoria (datos se pierden)
+        '/tmp/bitacora.db',  // PRIMERO: Directorio temporal (funcional)
+        ':memory:'  // FALLBACK: Memoria (datos se pierden)
       ]
     : [path.join(__dirname, 'bitacora.db')];
 
@@ -489,6 +488,24 @@ class Database {
                 function(err) {
                     if (err) reject(err);
                     else resolve(this.lastID);
+                }
+            );
+        });
+    }
+
+    // Obtener todas las observaciones
+    getAllObservations() {
+        return new Promise((resolve, reject) => {
+            this.db.all(
+                `SELECT o.*, u.name as observer_name, c.name as child_name, c.last_name as child_last_name
+                 FROM observations o
+                 JOIN users u ON o.observer_id = u.id
+                 JOIN children c ON o.child_id = c.id
+                 ORDER BY o.created_at DESC`,
+                [],
+                (err, rows) => {
+                    if (err) reject(err);
+                    else resolve(rows);
                 }
             );
         });
