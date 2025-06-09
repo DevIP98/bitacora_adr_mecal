@@ -1,32 +1,56 @@
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 const bcrypt = require('bcryptjs');
+const fs = require('fs');
 
 // Determinar la ruta de la base de datos según el entorno
 const DB_PATH = process.env.NODE_ENV === 'production' 
     ? '/opt/render/project/src/database/bitacora.db'
     : path.join(__dirname, 'bitacora.db');
 
+console.log('🗄️ [DATABASE] Configurando base de datos:', DB_PATH);
+console.log('🌐 [DATABASE] Entorno:', process.env.NODE_ENV || 'development');
+
 class Database {
     constructor() {
         this.db = null;
-    }
-
-    connect() {
+    }    connect() {
         return new Promise((resolve, reject) => {
             // Crear directorio si no existe (importante para producción)
-            const fs = require('fs');
             const dbDir = path.dirname(DB_PATH);
-            if (!fs.existsSync(dbDir)) {
-                fs.mkdirSync(dbDir, { recursive: true });
+            console.log('📁 [DATABASE] Verificando directorio:', dbDir);
+            
+            try {
+                if (!fs.existsSync(dbDir)) {
+                    console.log('📁 [DATABASE] Creando directorio de base de datos:', dbDir);
+                    fs.mkdirSync(dbDir, { recursive: true });
+                    console.log('✅ [DATABASE] Directorio creado exitosamente');
+                } else {
+                    console.log('✅ [DATABASE] Directorio ya existe');
+                }
+
+                // Verificar permisos de escritura en el directorio
+                fs.accessSync(dbDir, fs.constants.W_OK);
+                console.log('✅ [DATABASE] Permisos de escritura verificados');
+
+            } catch (dirError) {
+                console.error('❌ [DATABASE] Error con directorio:', dirError);
+                reject(dirError);
+                return;
             }
 
+            console.log('🔄 [DATABASE] Intentando conectar a:', DB_PATH);
             this.db = new sqlite3.Database(DB_PATH, (err) => {
                 if (err) {
-                    console.error('❌ Error conectando a la base de datos:', err);
+                    console.error('❌ [DATABASE] Error conectando a la base de datos:', {
+                        error: err.message,
+                        code: err.code,
+                        errno: err.errno,
+                        path: DB_PATH
+                    });
                     reject(err);
                 } else {
-                    console.log('✅ Conectado a la base de datos SQLite en:', DB_PATH);
+                    console.log('✅ [DATABASE] Conectado a la base de datos SQLite en:', DB_PATH);
                     // Configurar opciones de SQLite para mejor rendimiento
                     this.db.run('PRAGMA foreign_keys = ON');
                     this.db.run('PRAGMA journal_mode = WAL');
