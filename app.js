@@ -545,6 +545,32 @@ app.use((error, req, res, next) => {
     }
 });
 
+// Manejo de cierre graceful para guardar datos en memoria
+if (process.env.NODE_ENV === 'production') {
+    const gracefulShutdown = () => {
+        console.log('🔄 [SERVER] Cerrando servidor...');
+        if (db && db.getStatus().isMemory) {
+            console.log('🔄 [SERVER] Exportando datos de base de datos en memoria antes de cerrar...');
+            db.exportDataToJson()
+                .then(() => {
+                    console.log('✅ [SERVER] Datos exportados correctamente');
+                    process.exit(0);
+                })
+                .catch(err => {
+                    console.error('❌ [SERVER] Error exportando datos:', err);
+                    process.exit(1);
+                });
+        } else {
+            process.exit(0);
+        }
+    };
+
+    // Registrar eventos de cierre
+    process.on('SIGTERM', gracefulShutdown);
+    process.on('SIGINT', gracefulShutdown);
+    process.on('SIGUSR2', gracefulShutdown); // Nodemon restart
+}
+
 // Ruta 404
 app.use((req, res) => {
     res.status(404).redirect('/auth/login');

@@ -4,11 +4,10 @@ const bcrypt = require('bcryptjs');
 const fs = require('fs');
 
 // Determinar la ruta de la base de datos según el entorno
-// CONFIGURACIÓN RENDER: Usar SOLO rutas temporales
+// CONFIGURACIÓN RENDER: Usar SOLO memoria en producción ya que parece haber restricciones para archivos SQLite
 const DB_PATHS = process.env.NODE_ENV === 'production' 
     ? [
-        '/tmp/bitacora_sqlite.db',                       // Única opción: /tmp (garantizado)
-        ':memory:'                                       // Fallback: memoria
+        ':memory:'                                       // Única opción: memoria
       ]
     : [path.join(__dirname, 'bitacora.db')];
 
@@ -179,6 +178,16 @@ class Database {
                 
                 console.log('🔄 [DATABASE] Creando tablas...');
                 await this.createTables();
+                
+                // Si estamos en memoria y en producción, intentar importar datos
+                if (this.currentDbPath === ':memory:' && process.env.NODE_ENV === 'production') {
+                    console.log('🔄 [DATABASE] Base de datos en memoria detectada, intentando importar datos...');
+                    try {
+                        await this.importDataFromJson();
+                    } catch (importErr) {
+                        console.error('⚠️ [DATABASE] Error importando datos:', importErr.message);
+                    }
+                }
                 
                 console.log('🔄 [DATABASE] Verificando usuario por defecto...');
                 await this.createDefaultUser();
@@ -573,15 +582,232 @@ class Database {
         };
     }
 
+    // Exportar datos a JSON para persistencia en entorno Render
+    exportDataToJson() {
+        if (!this.db || process.env.NODE_ENV !== 'production') {
+            return Promise.resolve(false);
+        }
+
+        return new Promise((resolve, reject) => {
+            console.log('📤 [DATABASE] Exportando datos a JSON...');
+            
+            const exportPath = '/tmp/bitacora_data_export.json';
+            const data = { users: [], children: [], observations: [] };
+            
+            Promise.all([
+                // Exportar usuarios
+                new Promise((resolveUsers, rejectUsers) => {
+                    this.db.all("SELECT * FROM users", [], (err, rows) => {
+                        if (err) rejectUsers(err);
+                        else {
+                            data.users = rows;
+                            console.log(`📤 [DATABASE] ${rows.length} usuarios exportados`);
+                            resolveUsers();
+                        }
+                    });
+                }),
+                
+                // Exportar niños
+                new Promise((resolveChildren, rejectChildren) => {
+                    this.db.all("SELECT * FROM children", [], (err, rows) => {
+                        if (err) rejectChildren(err);
+                        else {
+                            data.children = rows;
+                            console.log(`📤 [DATABASE] ${rows.length} niños exportados`);
+                            resolveChildren();
+                        }
+                    });
+                }),
+                
+                // Exportar observaciones
+                new Promise((resolveObs, rejectObs) => {
+                    this.db.all("SELECT * FROM observations", [], (err, rows) => {
+                        if (err) rejectObs(err);
+                        else {
+                            data.observations = rows;
+                            console.log(`📤 [DATABASE] ${rows.length} observaciones exportadas`);
+                            resolveObs();
+                        }
+                    });
+                })
+            ])
+            .then(() => {
+                try {
+                    fs.writeFileSync(exportPath, JSON.stringify(data, null, 2));
+                    console.log(`✅ [DATABASE] Datos exportados a ${exportPath}`);
+                    resolve(true);
+                } catch (writeErr) {
+                    console.error('❌ [DATABASE] Error escribiendo exportación:', writeErr);
+                    reject(writeErr);
+                }
+            })
+            .catch(err => {
+                console.error('❌ [DATABASE] Error exportando datos:', err);
+                reject(err);
+            });
+        });
+    }
+
+    // Importar datos desde JSON al iniciar con base de datos en memoria
+    importDataFromJson() {
+        if (!this.db || this.currentDbPath !== ':memory:' || process.env.NODE_ENV !== 'production') {
+            return Promise.resolve(false);
+        }
+
+        return new Promise((resolve, reject) => {
+            const importPath = '/tmp/bitacora_data_export.json';
+            console.log('📥 [DATABASE] Intentando importar datos desde', importPath);
+            
+            if (!fs.existsSync(importPath)) {
+                console.log('ℹ️ [DATABASE] Archivo de importación no existe, omitiendo importación');
+                return resolve(false);
+            }
+            
+            try {
+                const jsonData = JSON.parse(fs.readFileSync(importPath, 'utf8'));
+                console.log('📥 [DATABASE] Datos leídos correctamente:', {
+                    users: jsonData.users?.length || 0,
+                    children: jsonData.children?.length || 0,
+                    observations: jsonData.observations?.length || 0
+                });
+                
+                // Importar datos en secuencia
+                Promise.resolve()
+                // Primero importar usuarios
+                .then(() => {
+                    if (!jsonData.users?.length) return;
+                    
+                    const importPromises = jsonData.users.map(user => {
+                        return new Promise((resolveUser, rejectUser) => {
+                            this.db.run(
+                                `INSERT OR REPLACE INTO users 
+                                (id, username, password, name, email, role, created_at) 
+                                VALUES (?, ?, ?, ?, ?, ?, ?)`,
+                                [user.id, user.username, user.password, user.name, 
+                                 user.email, user.role, user.created_at],
+                                err => {
+                                    if (err) rejectUser(err);
+                                    else resolveUser();
+                                }
+                            );
+                        });
+                    });
+                    
+                    return Promise.all(importPromises)
+                    .then(() => {
+                        console.log(`✅ [DATABASE] ${jsonData.users.length} usuarios importados`);
+                    });
+                })
+                
+                // Luego importar niños
+                .then(() => {
+                    if (!jsonData.children?.length) return;
+                    
+                    const importPromises = jsonData.children.map(child => {
+                        return new Promise((resolveChild, rejectChild) => {
+                            this.db.run(
+                                `INSERT OR REPLACE INTO children 
+                                (id, name, last_name, age, birthdate, group_name, 
+                                parent_name, parent_phone, parent_email, emergency_contact, 
+                                special_needs, notes, active, created_at, created_by) 
+                                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                                [child.id, child.name, child.last_name, child.age, 
+                                 child.birthdate, child.group_name, child.parent_name, 
+                                 child.parent_phone, child.parent_email, child.emergency_contact,
+                                 child.special_needs, child.notes, child.active, 
+                                 child.created_at, child.created_by],
+                                err => {
+                                    if (err) rejectChild(err);
+                                    else resolveChild();
+                                }
+                            );
+                        });
+                    });
+                    
+                    return Promise.all(importPromises)
+                    .then(() => {
+                        console.log(`✅ [DATABASE] ${jsonData.children.length} niños importados`);
+                    });
+                })
+                
+                // Finalmente importar observaciones
+                .then(() => {
+                    if (!jsonData.observations?.length) return;
+                    
+                    const importPromises = jsonData.observations.map(obs => {
+                        return new Promise((resolveObs, rejectObs) => {
+                            this.db.run(
+                                `INSERT OR REPLACE INTO observations 
+                                (id, child_id, observer_id, observation_date, observation_types, 
+                                description, tags, talked_with_child, prayed_for_issue, 
+                                notified_parents, requires_followup, additional_comments, 
+                                created_at, updated_at) 
+                                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                                [obs.id, obs.child_id, obs.observer_id, obs.observation_date, 
+                                 obs.observation_types, obs.description, obs.tags, 
+                                 obs.talked_with_child, obs.prayed_for_issue, obs.notified_parents, 
+                                 obs.requires_followup, obs.additional_comments, 
+                                 obs.created_at, obs.updated_at],
+                                err => {
+                                    if (err) rejectObs(err);
+                                    else resolveObs();
+                                }
+                            );
+                        });
+                    });
+                    
+                    return Promise.all(importPromises)
+                    .then(() => {
+                        console.log(`✅ [DATABASE] ${jsonData.observations.length} observaciones importadas`);
+                    });
+                })
+                
+                // Finalizar importación
+                .then(() => {
+                    console.log('✅ [DATABASE] Importación completada exitosamente');
+                    resolve(true);
+                })
+                .catch(importErr => {
+                    console.error('❌ [DATABASE] Error durante la importación:', importErr);
+                    // A pesar del error, no rechazamos la promesa para permitir que la aplicación continúe
+                    resolve(false);
+                });
+                
+            } catch (readErr) {
+                console.error('❌ [DATABASE] Error leyendo archivo de importación:', readErr);
+                resolve(false);
+            }
+        });
+    }
+
     close() {
         if (this.db) {
-            this.db.close((err) => {
-                if (err) {
-                    console.error('Error al cerrar la base de datos:', err);
-                } else {
-                    console.log('Conexión a la base de datos cerrada');
-                }
-            });
+            // Si estamos en producción y usando memoria, exportar datos antes de cerrar
+            if (process.env.NODE_ENV === 'production' && this.currentDbPath === ':memory:') {
+                console.log('🔄 [DATABASE] Exportando datos antes de cerrar...');
+                this.exportDataToJson()
+                    .then(() => {
+                        this.db.close((err) => {
+                            if (err) {
+                                console.error('❌ Error al cerrar la base de datos:', err);
+                            } else {
+                                console.log('✅ [DATABASE] Conexión cerrada después de exportar datos');
+                            }
+                        });
+                    })
+                    .catch(err => {
+                        console.error('❌ [DATABASE] Error exportando datos al cerrar:', err);
+                        this.db.close();
+                    });
+            } else {
+                this.db.close((err) => {
+                    if (err) {
+                        console.error('❌ [DATABASE] Error al cerrar la base de datos:', err);
+                    } else {
+                        console.log('✅ [DATABASE] Conexión a la base de datos cerrada');
+                    }
+                });
+            }
         }
     }
 }
