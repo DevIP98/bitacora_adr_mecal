@@ -1,7 +1,7 @@
 services:
   - type: web
     name: bitacora-adr-mecal
-    env: node
+    runtime: node
     buildCommand: npm install
     startCommand: npm start
     envVars:
