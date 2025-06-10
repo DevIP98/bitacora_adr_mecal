@@ -216,13 +216,11 @@ class PostgresDatabase {
                 reject(error);
             }
         });
-    }
-
-    getAllUsers() {
+    }    getAllUsers() {
         return new Promise(async (resolve, reject) => {
             try {
                 const result = await this.pool.query(
-                    "SELECT id, username, name, role, created_at FROM users ORDER BY created_at DESC"
+                    "SELECT id, username, name, email, role, created_at FROM users ORDER BY created_at DESC"
                 );
                 
                 console.log('🔍 [DB] Total usuarios en base de datos:', result.rows.length);
