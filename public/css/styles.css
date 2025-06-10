@@ -472,6 +472,31 @@ body {
     }
 }
 
+/* Mejoras para el navbar en móvil */
+@media (max-width: 991.98px) {
+    .navbar-nav {
+        padding-top: 0.5rem;
+    }
+    
+    .navbar-nav .nav-link {
+        padding: 0.75rem 1rem;
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    
+    .navbar-nav .nav-link:last-child {
+        border-bottom: none;
+    }
+    
+    .navbar-toggler {
+        border: none;
+        padding: 0.25rem 0.5rem;
+    }
+    
+    .navbar-toggler:focus {
+        box-shadow: none;
+    }
+}
+
 /* Timeline para observaciones */
 .timeline {
     position: relative;
@@ -847,142 +872,91 @@ body {
     .auth-card {
         padding: 1.5rem;
     }
-}
-
-/* Estados hover para las tarjetas */
-.list-group-item:hover {
-    background-color: #f8f9fa;
-    cursor: pointer;
-}
-
-/* Loading spinner personalizado */
-.spinner-custom {
-    width: 2rem;
-    height: 2rem;
-    border: 3px solid #f3f3f3;
-    border-top: 3px solid var(--primary-color);
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
-/* Estilos para elementos destacados */
-.highlight {
-    background-color: #fff3cd;
-    border-left: 4px solid var(--warning-color);
-    padding: 0.75rem;
-    margin: 1rem 0;
-}
-
-/* Mejoras para checkboxes y radios */
-.form-check-input {
-    margin-top: 0.125rem;
-}
-
-.form-check-label {
-    font-weight: 500;
-}
-
-/* Estilos para badges en formularios */
-.form-check-label .badge {
-    margin-left: 0.25rem;
-}
-
-/* Footer si se necesita */
-.footer {
-    background-color: var(--dark-color);
-    color: white;
-    padding: 2rem 0;
-    margin-top: 3rem;
-}
-
-/* Utilidades adicionales */
-.text-decoration-none:hover {
-    text-decoration: none !important;
-}
-
-.cursor-pointer {
-    cursor: pointer;
-}
-
-.border-start-primary {
-    border-left: 4px solid var(--primary-color) !important;
-}
-
-.border-start-success {
-    border-left: 4px solid var(--success-color) !important;
-}
-
-.border-start-warning {
-    border-left: 4px solid var(--warning-color) !important;
-}
-
-.border-start-danger {
-    border-left: 4px solid var(--danger-color) !important;
-}
-
-/* Estilos para preguntas reflexivas */
-.questions-list {
-    padding-left: 20px;
-    margin-bottom: 0;
-}
-
-.question-item {
-    background: #f8f9fa;
-    border-radius: 8px;
-    padding: 15px;
-    border-left: 4px solid var(--primary-color);
-    margin-bottom: 15px !important;
-}
-
-.question-text {
-    font-weight: 500;
-    color: #495057;
-    margin-bottom: 8px;
-    font-size: 0.95rem;
-}
-
-.answer-text {
-    color: #6c757d;
-    font-size: 0.9rem;
-    padding-left: 15px;
-    border-left: 2px solid #dee2e6;
-    background: #fff;
-    padding: 8px 15px;
-    border-radius: 4px;
-}
-
-.question-text strong {
-    color: var(--primary-color);
-    margin-right: 5px;
-}
-
-.answer-text strong {
-    color: var(--success-color);
-    margin-right: 5px;
-}
-
-/* Responsivo para preguntas */
-@media (max-width: 768px) {
-    .questions-list {
-        padding-left: 10px;
+    
+    .container-fluid {
+        padding-left: 0.75rem !important;
+        padding-right: 0.75rem !important;
     }
     
-    .question-item {
-        padding: 12px;
+    /* Header responsive */
+    .btn-group.d-flex {
+        gap: 0.5rem;
     }
     
-    .question-text,
-    .answer-text {
-        font-size: 0.85rem;
+    .btn-group.d-flex .btn {
+        flex: 1;
+        font-size: 0.875rem;
+        padding: 0.5rem 0.75rem;
     }
     
-    .answer-text {
-        padding: 6px 12px;
-        padding-left: 12px;
+    /* Cards de estadísticas */
+    .card-body h3 {
+        font-size: 1.75rem;
     }
+    
+    .card-body h6 {
+        font-size: 0.875rem;
+    }
+    
+    /* Lista de niños mejorada para móvil */
+    .list-group-item {
+        border-left: none !important;
+        border-right: none !important;
+    }
+    
+    .btn-group-vertical .btn {
+        min-width: 40px;
+        padding: 0.375rem 0.5rem;
+    }
+    
+    /* Mejora del resaltado en móvil */
+    .border-success {
+        border-width: 3px !important;
+        border-left: 5px solid var(--bs-success) !important;
+    }
+    
+    /* Textos truncados más agresivos en móvil */
+    .text-truncate {
+        max-width: 200px;
+    }
+    
+    /* Espaciado de cards */
+    .card {
+        margin-bottom: 1rem;
+    }
+}
+
+/* Mejoras para tablets */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .col-lg-6 {
+        margin-bottom: 1rem;
+    }
+}
+
+/* Animación suave para elementos resaltados */
+.border-success.bg-light {
+    animation: highlightPulse 2s ease-in-out;
+}
+
+@keyframes highlightPulse {
+    0% { background-color: rgba(25, 135, 84, 0.1); }
+    50% { background-color: rgba(25, 135, 84, 0.2); }
+    100% { background-color: rgba(25, 135, 84, 0.1); }
+}
+
+/* Mejora de accesibilidad para botones pequeños */
+.btn-sm {
+    min-height: 31px;
+    min-width: 31px;
+}
+
+/* Espaciado consistente para alerts */
+.alert {
+    margin-bottom: 1.5rem;
+}
+
+/* Mejora visual de badges */
+.badge {
+    font-size: 0.75rem;
+    padding: 0.35em 0.65em;
 }

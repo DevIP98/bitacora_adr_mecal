@@ -37,15 +37,13 @@ router.post('/add', async (req, res) => {
             notified_parents,
             requires_followup,
             additional_comments
-        } = req.body;
-
-        if (!child_id || !observation_date || !description) {
-            return res.redirect('/observations/add?error=Por favor complete todos los campos requeridos');
+        } = req.body;        if (!child_id || !observation_date || !description) {
+            return res.redirect(`/observations/add?error=Por favor complete todos los campos requeridos&child_id=${child_id || ''}`);
         }
 
         // Verificar que hay al menos un tipo de observación seleccionado
         if (!observation_types) {
-            return res.redirect('/observations/add?error=Por favor seleccione al menos un tipo de observación');
+            return res.redirect(`/observations/add?error=Por favor seleccione al menos un tipo de observación&child_id=${child_id || ''}`);
         }
 
         // Función para convertir a array y limpiar
@@ -83,13 +81,21 @@ router.post('/add', async (req, res) => {
             notified_parents: notified_parents === 'on' ? 1 : 0,
             requires_followup: requires_followup === 'on' ? 1 : 0,
             additional_comments: additional_comments || null
-        };
-
-        await db.createObservation(observationData);
-        res.redirect(`/children/${child_id}?success=Observación registrada exitosamente`);
-    } catch (error) {
+        };        await db.createObservation(observationData);
+        
+        // Verificar si viene del dashboard
+        const returnUrl = req.headers.referer && req.headers.referer.includes('/dashboard') 
+            ? '/dashboard' 
+            : `/children/${child_id}`;
+            
+        if (returnUrl === '/dashboard') {
+            res.redirect(`/dashboard?success=Observación registrada exitosamente&highlighted_child=${child_id}`);
+        } else {
+            res.redirect(`${returnUrl}?success=Observación registrada exitosamente`);
+        }    } catch (error) {
         console.error('Error al crear observación:', error);
-        res.redirect('/observations/add?error=Error al registrar la observación');
+        const childId = req.body.child_id || '';
+        res.redirect(`/observations/add?error=Error al registrar la observación&child_id=${childId}`);
     }
 });
 

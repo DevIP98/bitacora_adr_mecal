@@ -13,13 +13,14 @@ router.get('/', async (req, res) => {
         const stats = {
             totalChildren: children.length,
             totalObservations: recentObservations.length
-        };
-
-        res.render('dashboard/index', {
+        };        res.render('dashboard/index', {
             title: 'Dashboard - Bitácora ADR',
             children,
             recentObservations,
-            stats
+            stats,
+            success: req.query.success,
+            error: req.query.error,
+            highlightedChild: req.query.highlighted_child ? parseInt(req.query.highlighted_child) : null
         });
     } catch (error) {
         console.error('Error en dashboard:', error);

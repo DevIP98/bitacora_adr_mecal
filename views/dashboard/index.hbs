@@ -1,18 +1,18 @@
-<div class="container mt-4">
+<div class="container-fluid mt-4 px-3">
     <div class="row">
         <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2><i class="bi bi-house"></i> Dashboard</h2>
-                <div>
-                    <a href="/children/add" class="btn btn-success me-2">
-                        <i class="bi bi-person-plus"></i> Agregar Niño
+            <!-- Header responsive -->
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4">
+                <h2 class="mb-3 mb-md-0"><i class="bi bi-house"></i> Dashboard</h2>
+                <div class="btn-group d-flex d-md-block w-100 w-md-auto" role="group">
+                    <a href="/children/add" class="btn btn-success">
+                        <i class="bi bi-person-plus"></i> <span class="d-none d-sm-inline">Agregar</span> Niño
                     </a>
                     <a href="/observations/add" class="btn btn-primary">
-                        <i class="bi bi-plus-circle"></i> Nueva Observación
+                        <i class="bi bi-plus-circle"></i> <span class="d-none d-sm-inline">Nueva</span> Observación
                     </a>
                 </div>
-            </div>
-        </div>
+            </div>        </div>
     </div>
 
     {{#if error}}
@@ -21,65 +21,82 @@
     </div>
     {{/if}}
 
-    <!-- Estadísticas -->
-    <div class="row mb-4">
-        <div class="col-md-6">
-            <div class="card bg-primary text-white">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <h5 class="card-title">Total de Niños</h5>
-                            <h2>{{stats.totalChildren}}</h2>
-                        </div>
-                        <div class="align-self-center">
-                            <i class="bi bi-people fs-1"></i>
-                        </div>
+    {{#if success}}
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle"></i> {{success}}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {{/if}}
+
+    <!-- Estadísticas - Diseño móvil mejorado -->
+    <div class="row mb-4 g-3">
+        <div class="col-sm-6">
+            <div class="card bg-primary text-white h-100">
+                <div class="card-body d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title mb-2">Total de Niños</h6>
+                        <h3 class="mb-0">{{stats.totalChildren}}</h3>
+                    </div>
+                    <div>
+                        <i class="bi bi-people fs-2"></i>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="col-md-6">
-            <div class="card bg-info text-white">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between">
-                        <div>
-                            <h5 class="card-title">Observaciones Recientes</h5>
-                            <h2>{{recentObservations.length}}</h2>
-                        </div>
-                        <div class="align-self-center">
-                            <i class="bi bi-eye fs-1"></i>
-                        </div>
+        <div class="col-sm-6">
+            <div class="card bg-info text-white h-100">
+                <div class="card-body d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title mb-2">Observaciones Recientes</h6>
+                        <h3 class="mb-0">{{recentObservations.length}}</h3>
+                    </div>                    <div>
+                        <i class="bi bi-eye fs-2"></i>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="row">
+    <!-- Contenido principal - Stack en móvil -->
+    <div class="row g-3">
         <!-- Lista de niños -->
-        <div class="col-lg-6">
-            <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5><i class="bi bi-people"></i> Niños Registrados</h5>
-                    <a href="/children" class="btn btn-sm btn-outline-primary">Ver todos</a>
+        <div class="col-12 col-lg-6 order-1 order-lg-1">
+            <div class="card h-100">
+                <div class="card-header d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center">
+                    <h5 class="mb-2 mb-sm-0"><i class="bi bi-people"></i> Niños Registrados</h5>
+                    <a href="/children" class="btn btn-sm btn-outline-primary align-self-end align-self-sm-auto">Ver todos</a>
                 </div>
                 <div class="card-body">
                     {{#if children}}
-                    <div class="list-group list-group-flush">
-                        {{#each children}}
-                        <div class="list-group-item d-flex justify-content-between align-items-center">
-                            <div>
-                                <strong>{{this.name}} {{this.last_name}}</strong>
-                                {{#if this.age}}<br><small class="text-muted">{{this.age}} años</small>{{/if}}
-                                {{#if this.group_name}}<br><small class="text-muted">Grupo: {{this.group_name}}</small>{{/if}}
-                            </div>
-                            <div class="btn-group" role="group">
-                                <a href="/children/{{this.id}}" class="btn btn-sm btn-outline-primary" title="Ver detalles">
-                                    <i class="bi bi-eye"></i>
-                                </a>
-                                <a href="/observations/add?child_id={{this.id}}" class="btn btn-sm btn-outline-success" title="Nueva observación">
-                                    <i class="bi bi-plus"></i>
-                                </a>
+                    <div class="list-group list-group-flush">                        {{#each children}}
+                        <div class="list-group-item p-3 {{#if (eq this.id ../highlightedChild)}}border-success bg-light{{/if}}" {{#if (eq this.id ../highlightedChild)}}id="highlighted-child"{{/if}}>
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="flex-grow-1 me-2">
+                                    <h6 class="mb-1 text-truncate {{#if (eq this.id ../highlightedChild)}}text-success fw-bold{{/if}}">
+                                        {{this.name}} {{this.last_name}}
+                                        {{#if (eq this.id ../highlightedChild)}}
+                                        <i class="bi bi-check-circle-fill text-success ms-1"></i>
+                                        {{/if}}
+                                    </h6>
+                                    {{#if this.age}}<small class="text-muted d-block">{{this.age}} años</small>{{/if}}
+                                    {{#if this.group_name}}<small class="text-muted d-block">Grupo: {{this.group_name}}</small>{{/if}}
+                                </div>
+                                <div class="btn-group-vertical btn-group-sm d-flex d-sm-none" role="group">
+                                    <a href="/children/{{this.id}}" class="btn btn-outline-primary mb-1" title="Ver detalles">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <a href="/observations/add?child_id={{this.id}}" class="btn btn-outline-success" title="Nueva observación">
+                                        <i class="bi bi-plus"></i>
+                                    </a>
+                                </div>
+                                <div class="btn-group d-none d-sm-flex" role="group">
+                                    <a href="/children/{{this.id}}" class="btn btn-sm btn-outline-primary" title="Ver detalles">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <a href="/observations/add?child_id={{this.id}}" class="btn btn-sm btn-outline-success" title="Nueva observación">
+                                        <i class="bi bi-plus"></i>
+                                    </a>
+                                </div>
                             </div>
                         </div>
                         {{/each}}
@@ -87,7 +104,7 @@
                     {{else}}
                     <div class="text-center text-muted py-4">
                         <i class="bi bi-people fs-1"></i>
-                        <p>No hay niños registrados</p>
+                        <p class="mt-2 mb-3">No hay niños registrados</p>
                         <a href="/children/add" class="btn btn-primary">Agregar primer niño</a>
                     </div>
                     {{/if}}
@@ -96,33 +113,35 @@
         </div>
 
         <!-- Observaciones recientes -->
-        <div class="col-lg-6">
-            <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h5><i class="bi bi-clock-history"></i> Observaciones Recientes</h5>
-                    <a href="/observations" class="btn btn-sm btn-outline-primary">Ver todas</a>
+        <div class="col-12 col-lg-6 order-2 order-lg-2">
+            <div class="card h-100">
+                <div class="card-header d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center">
+                    <h5 class="mb-2 mb-sm-0"><i class="bi bi-clock-history"></i> Observaciones Recientes</h5>
+                    <a href="/observations" class="btn btn-sm btn-outline-primary align-self-end align-self-sm-auto">Ver todas</a>
                 </div>
                 <div class="card-body">
                     {{#if recentObservations}}
                     <div class="list-group list-group-flush">
                         {{#each recentObservations}}
-                        <div class="list-group-item">
-                            <div class="d-flex w-100 justify-content-between">
-                                <h6 class="mb-1">{{this.child_name}} {{this.child_last_name}}</h6>
-                                <small>{{formatDate this.observation_date}}</small>
+                        <div class="list-group-item p-3">
+                            <div class="d-flex w-100 justify-content-between align-items-start mb-2">
+                                <h6 class="mb-0 text-truncate me-2">{{this.child_name}} {{this.child_last_name}}</h6>
+                                <small class="text-nowrap">{{formatDate this.observation_date}}</small>
                             </div>
-                            <p class="mb-1">{{this.description}}</p>
-                            <small class="text-muted">Por: {{this.observer_name}}</small>
-                            {{#if this.requires_followup}}
-                            <span class="badge bg-warning ms-2">Seguimiento</span>
-                            {{/if}}
+                            <p class="mb-2 text-truncate">{{this.description}}</p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <small class="text-muted">Por: {{this.observer_name}}</small>
+                                {{#if this.requires_followup}}
+                                <span class="badge bg-warning">Seguimiento</span>
+                                {{/if}}
+                            </div>
                         </div>
                         {{/each}}
                     </div>
                     {{else}}
                     <div class="text-center text-muted py-4">
                         <i class="bi bi-journal fs-1"></i>
-                        <p>No hay observaciones registradas</p>
+                        <p class="mt-2 mb-3">No hay observaciones registradas</p>
                         <a href="/observations/add" class="btn btn-primary">Crear primera observación</a>
                     </div>
                     {{/if}}
@@ -131,3 +150,20 @@
         </div>
     </div>
 </div>
+
+{{#if highlightedChild}}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const highlightedElement = document.getElementById('highlighted-child');
+    if (highlightedElement) {
+        // Scroll suave al elemento resaltado después de un pequeño delay
+        setTimeout(() => {
+            highlightedElement.scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'center' 
+            });
+        }, 500);
+    }
+});
+</script>
+{{/if}}
