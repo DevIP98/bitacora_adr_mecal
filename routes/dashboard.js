@@ -16,7 +16,7 @@ router.get('/', async (req, res) => {
         // Estadísticas básicas y avanzadas
         const stats = {
             totalChildren: children.length,
-            totalObservations: recentObservations.length,
+            totalObservations: observationStats.totalObservations || recentObservations.length,
             observationTypes: observationStats.typeStats,
             observationTags: observationStats.tagStats,
             followupStats: observationStats.followupStats,

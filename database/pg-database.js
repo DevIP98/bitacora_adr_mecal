@@ -558,75 +558,93 @@ class PostgresDatabase {
                 reject(error);
             }
         });
-    }
-
-    getObservationStats() {
+    }    getObservationStats() {
         return new Promise(async (resolve, reject) => {
             try {
-                // Obtener estadísticas de observaciones por tipo
-                const typeStatsQuery = await this.pool.query(`
+                // Obtener todas las observaciones para calcular las estadísticas
+                const observationsQuery = await this.pool.query(`
                     SELECT 
-                        jsonb_array_elements_text(observation_types) as type,
-                        COUNT(*) as count
-                    FROM 
-                        observations
-                    GROUP BY 
-                        jsonb_array_elements_text(observation_types)
-                    ORDER BY 
-                        count DESC
-                `);
-                
-                // Obtener estadísticas de observaciones por etiqueta
-                const tagStatsQuery = await this.pool.query(`
-                    SELECT 
-                        jsonb_array_elements_text(tags) as tag,
-                        COUNT(*) as count
-                    FROM 
-                        observations
-                    GROUP BY 
-                        jsonb_array_elements_text(tags)
-                    ORDER BY 
-                        count DESC
-                `);
-                
-                // Obtener estadísticas de seguimiento
-                const followupStatsQuery = await this.pool.query(`
-                    SELECT 
+                        observation_types,
+                        tags,
                         requires_followup,
-                        COUNT(*) as count
+                        observation_date
                     FROM 
                         observations
-                    GROUP BY 
-                        requires_followup
                 `);
+                
+                // Procesar estadísticas por tipo de observación
+                const typeCount = {};
+                observationsQuery.rows.forEach(row => {
+                    try {
+                        if (row.observation_types) {
+                            const types = JSON.parse(row.observation_types);
+                            types.forEach(type => {
+                                typeCount[type] = (typeCount[type] || 0) + 1;
+                            });
+                        }
+                    } catch (e) {
+                        console.error("Error al parsear observation_types:", e);
+                    }
+                });
+                
+                const typeStats = Object.keys(typeCount).map(type => ({
+                    type,
+                    count: typeCount[type]
+                })).sort((a, b) => b.count - a.count);
+                
+                // Procesar estadísticas por etiqueta
+                const tagCount = {};
+                observationsQuery.rows.forEach(row => {
+                    try {
+                        if (row.tags) {
+                            const tags = JSON.parse(row.tags);
+                            tags.forEach(tag => {
+                                tagCount[tag] = (tagCount[tag] || 0) + 1;
+                            });
+                        }
+                    } catch (e) {
+                        console.error("Error al parsear tags:", e);
+                    }
+                });
+                
+                const tagStats = Object.keys(tagCount).map(tag => ({
+                    tag,
+                    count: tagCount[tag]
+                })).sort((a, b) => b.count - a.count);
+                
+                // Estadísticas de seguimiento
+                const pendientes = observationsQuery.rows.filter(row => row.requires_followup).length;
+                const totalObservations = observationsQuery.rows.length;
                 
                 // Observaciones por mes (últimos 6 meses)
-                const monthlyStatsQuery = await this.pool.query(`
-                    SELECT 
-                        date_trunc('month', observation_date) as month,
-                        COUNT(*) as count
-                    FROM 
-                        observations
-                    WHERE 
-                        observation_date >= NOW() - INTERVAL '6 months'
-                    GROUP BY 
-                        date_trunc('month', observation_date)
-                    ORDER BY 
-                        month ASC
-                `);
+                const sixMonthsAgo = new Date();
+                sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+                
+                const monthlyStats = {};
+                observationsQuery.rows.forEach(row => {
+                    if (row.observation_date) {
+                        const date = new Date(row.observation_date);
+                        if (date >= sixMonthsAgo) {
+                            const monthKey = `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}`;
+                            monthlyStats[monthKey] = (monthlyStats[monthKey] || 0) + 1;
+                        }
+                    }
+                });
+                
+                const monthlyStatsArray = Object.keys(monthlyStats).map(month => ({
+                    month,
+                    count: monthlyStats[month]
+                })).sort((a, b) => a.month.localeCompare(b.month));
                 
                 // Formatear datos de respuesta
                 const stats = {
-                    typeStats: typeStatsQuery.rows,
-                    tagStats: tagStatsQuery.rows,
-                    followupStats: followupStatsQuery.rows.reduce((acc, row) => {
-                        acc[row.requires_followup ? 'pendientes' : 'completados'] = parseInt(row.count);
-                        return acc;
-                    }, { pendientes: 0, completados: 0 }),
-                    monthlyStats: monthlyStatsQuery.rows.map(row => ({
-                        month: row.month,
-                        count: parseInt(row.count)
-                    }))
+                    typeStats: typeStats,
+                    tagStats: tagStats,
+                    followupStats: {
+                        pendientes: pendientes
+                    },
+                    monthlyStats: monthlyStatsArray,
+                    totalObservations: totalObservations
                 };
                 
                 resolve(stats);
