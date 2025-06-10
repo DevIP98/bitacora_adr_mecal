@@ -30,8 +30,8 @@
 
     <!-- Estadísticas - Diseño móvil mejorado -->
     <div class="row mb-4 g-3">
-        <div class="col-sm-6">
-            <div class="card bg-primary text-white h-100">
+        <div class="col-md-3 col-sm-6">
+            <div class="card bg-primary text-white h-100 shadow-sm">
                 <div class="card-body d-flex justify-content-between align-items-center">
                     <div>
                         <h6 class="card-title mb-2">Total de Niños</h6>
@@ -43,59 +43,134 @@
                 </div>
             </div>
         </div>
-        <div class="col-sm-6">
-            <div class="card bg-info text-white h-100">
+        <div class="col-md-3 col-sm-6">
+            <div class="card bg-info text-white h-100 shadow-sm">
                 <div class="card-body d-flex justify-content-between align-items-center">
                     <div>
-                        <h6 class="card-title mb-2">Observaciones Recientes</h6>
-                        <h3 class="mb-0">{{recentObservations.length}}</h3>
-                    </div>                    <div>
-                        <i class="bi bi-eye fs-2"></i>
+                        <h6 class="card-title mb-2">Total Observaciones</h6>
+                        <h3 class="mb-0">{{stats.totalObservations}}</h3>
+                    </div>
+                    <div>
+                        <i class="bi bi-journal-text fs-2"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+            <div class="card bg-warning text-dark h-100 shadow-sm">
+                <div class="card-body d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title mb-2">Requieren Seguimiento</h6>
+                        <h3 class="mb-0">{{stats.followupStats.pendientes}}</h3>
+                    </div>
+                    <div>
+                        <i class="bi bi-exclamation-circle fs-2"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 col-sm-6">
+            <div class="card bg-success text-white h-100 shadow-sm">
+                <div class="card-body d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title mb-2">Seguimientos Completados</h6>
+                        <h3 class="mb-0">{{stats.followupStats.completados}}</h3>
+                    </div>
+                    <div>
+                        <i class="bi bi-check2-circle fs-2"></i>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Contenido principal - Stack en móvil -->
+    <div class="row g-3 mb-4">
+        <!-- Gráficos de Estadísticas -->
+        <div class="col-12 col-lg-6">
+            <div class="card h-100 shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-bar-chart"></i> Tipos de Observación</h5>
+                </div>
+                <div class="card-body">
+                    <div class="observation-types-container">
+                        {{#each stats.observationTypes}}
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between mb-1">
+                                <span>{{this.type}}</span>
+                                <span class="badge bg-primary">{{this.count}}</span>
+                            </div>
+                            <div class="progress" style="height: 15px;">
+                                {{#with this}}
+                                <div class="progress-bar" role="progressbar" 
+                                    style="width: calc(({{count}} / {{../stats.totalObservations}}) * 100%);" 
+                                    aria-valuenow="{{count}}" aria-valuemin="0" aria-valuemax="{{../stats.totalObservations}}">
+                                </div>
+                                {{/with}}
+                            </div>
+                        </div>
+                        {{/each}}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-lg-6">
+            <div class="card h-100 shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-tags"></i> Etiquetas</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-2">
+                        {{#each stats.observationTags}}
+                        <div class="col-6">
+                            <div class="card h-100 
+                                {{#if (eq this.tag 'Positivo')}}bg-success text-white{{/if}}
+                                {{#if (eq this.tag 'Para seguimiento')}}bg-warning text-dark{{/if}}
+                                {{#if (eq this.tag 'Alerta')}}bg-danger text-white{{/if}}
+                            ">
+                                <div class="card-body text-center py-2">
+                                    <h5 class="mb-0">{{this.tag}}</h5>
+                                    <p class="mb-0 fs-4 fw-bold">{{this.count}}</p>
+                                </div>
+                            </div>
+                        </div>
+                        {{/each}}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>    <!-- Contenido principal -->
     <div class="row g-3">
-        <!-- Lista de niños -->
-        <div class="col-12 col-lg-6 order-1 order-lg-1">
-            <div class="card h-100">
+        <!-- Lista de niños con más observaciones -->
+        <div class="col-12 col-lg-6 order-1">
+            <div class="card h-100 shadow-sm">
                 <div class="card-header d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center">
-                    <h5 class="mb-2 mb-sm-0"><i class="bi bi-people"></i> Niños Registrados</h5>
+                    <h5 class="mb-2 mb-sm-0"><i class="bi bi-graph-up"></i> Niños con más Observaciones</h5>
                     <a href="/children" class="btn btn-sm btn-outline-primary align-self-end align-self-sm-auto">Ver todos</a>
                 </div>
                 <div class="card-body">
-                    {{#if children}}
-                    <div class="list-group list-group-flush">                        {{#each children}}
+                    {{#if topChildren}}
+                    <div class="list-group list-group-flush">
+                        {{#each topChildren}}
                         <div class="list-group-item p-3 {{#if (eq this.id ../highlightedChild)}}border-success bg-light{{/if}}" {{#if (eq this.id ../highlightedChild)}}id="highlighted-child"{{/if}}>
-                            <div class="d-flex justify-content-between align-items-start">
-                                <div class="flex-grow-1 me-2">
-                                    <h6 class="mb-1 text-truncate {{#if (eq this.id ../highlightedChild)}}text-success fw-bold{{/if}}">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-0 text-truncate {{#if (eq this.id ../highlightedChild)}}text-success fw-bold{{/if}}">
                                         {{this.name}} {{this.last_name}}
-                                        {{#if (eq this.id ../highlightedChild)}}
-                                        <i class="bi bi-check-circle-fill text-success ms-1"></i>
-                                        {{/if}}
+                                        {{#if (eq this.id ../highlightedChild)}}<i class="bi bi-check-circle-fill text-success ms-1"></i>{{/if}}
                                     </h6>
-                                    {{#if this.age}}<small class="text-muted d-block">{{this.age}} años</small>{{/if}}
                                     {{#if this.group_name}}<small class="text-muted d-block">Grupo: {{this.group_name}}</small>{{/if}}
                                 </div>
-                                <div class="btn-group-vertical btn-group-sm d-flex d-sm-none" role="group">
-                                    <a href="/children/{{this.id}}" class="btn btn-outline-primary mb-1" title="Ver detalles">
-                                        <i class="bi bi-eye"></i>
-                                    </a>
-                                    <a href="/observations/add?child_id={{this.id}}" class="btn btn-outline-success" title="Nueva observación">
-                                        <i class="bi bi-plus"></i>
-                                    </a>
-                                </div>
-                                <div class="btn-group d-none d-sm-flex" role="group">
-                                    <a href="/children/{{this.id}}" class="btn btn-sm btn-outline-primary" title="Ver detalles">
-                                        <i class="bi bi-eye"></i>
-                                    </a>
-                                    <a href="/observations/add?child_id={{this.id}}" class="btn btn-sm btn-outline-success" title="Nueva observación">
-                                        <i class="bi bi-plus"></i>
-                                    </a>
+                                <div class="d-flex align-items-center">
+                                    <span class="badge bg-primary rounded-pill me-2">{{this.observation_count}}</span>
+                                    <div class="btn-group btn-group-sm" role="group">
+                                        <a href="/children/{{this.id}}" class="btn btn-outline-primary" title="Ver detalles">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <a href="/observations/add?child_id={{this.id}}" class="btn btn-outline-success" title="Nueva observación">
+                                            <i class="bi bi-plus"></i>
+                                        </a>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -104,8 +179,7 @@
                     {{else}}
                     <div class="text-center text-muted py-4">
                         <i class="bi bi-people fs-1"></i>
-                        <p class="mt-2 mb-3">No hay niños registrados</p>
-                        <a href="/children/add" class="btn btn-primary">Agregar primer niño</a>
+                        <p class="mt-2 mb-0">No hay datos suficientes</p>
                     </div>
                     {{/if}}
                 </div>
@@ -113,8 +187,8 @@
         </div>
 
         <!-- Observaciones recientes -->
-        <div class="col-12 col-lg-6 order-2 order-lg-2">
-            <div class="card h-100">
+        <div class="col-12 col-lg-6 order-2">
+            <div class="card h-100 shadow-sm">
                 <div class="card-header d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center">
                     <h5 class="mb-2 mb-sm-0"><i class="bi bi-clock-history"></i> Observaciones Recientes</h5>
                     <a href="/observations" class="btn btn-sm btn-outline-primary align-self-end align-self-sm-auto">Ver todas</a>
@@ -149,6 +223,49 @@
             </div>
         </div>
     </div>
+    
+    <!-- Actividad reciente -->
+    <div class="row mt-4 mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-activity"></i> Actividad Reciente (7 días)</h5>
+                </div>
+                <div class="card-body">
+                    {{#if recentActivity}}
+                    <div class="timeline">
+                        {{#each recentActivity}}
+                        <div class="timeline-item">
+                            <div class="timeline-date">
+                                <small>{{formatDateTime this.date}}</small>
+                            </div>
+                            <div class="timeline-content">
+                                <div class="d-flex align-items-center">
+                                    <div class="timeline-icon bg-primary text-white">
+                                        <i class="bi bi-journal-text"></i>
+                                    </div>
+                                    <div class="timeline-text ms-3">
+                                        <p class="mb-0">
+                                            <strong>{{this.user_name}}</strong> añadió una observación para 
+                                            <a href="/children/{{this.child_id}}">{{this.child_name}}</a>
+                                        </p>
+                                        <small class="text-muted text-truncate d-block">{{this.description}}</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {{/each}}
+                    </div>
+                    {{else}}
+                    <div class="text-center text-muted py-4">
+                        <i class="bi bi-calendar fs-1"></i>
+                        <p class="mt-2 mb-0">No hay actividad reciente</p>
+                    </div>
+                    {{/if}}
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 {{#if highlightedChild}}
@@ -167,3 +284,78 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 {{/if}}
+
+<!-- Estilos adicionales para los nuevos componentes del dashboard -->
+<style>
+/* Línea de tiempo para actividad reciente */
+.timeline {
+    position: relative;
+    padding-left: 40px;
+    margin-top: 10px;
+}
+
+.timeline-item {
+    position: relative;
+    padding-bottom: 1.5rem;
+    border-left: 1px solid #dee2e6;
+    padding-left: 20px;
+}
+
+.timeline-item:last-child {
+    padding-bottom: 0;
+}
+
+.timeline-icon {
+    position: absolute;
+    left: -10px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    text-align: center;
+    line-height: 20px;
+    font-size: 0.75rem;
+}
+
+.timeline-date {
+    margin-bottom: 0.25rem;
+    color: #6c757d;
+}
+
+.timeline-content {
+    padding-bottom: 1rem;
+}
+
+.timeline-item:last-child .timeline-content {
+    padding-bottom: 0;
+}
+
+/* Contenedor de gráficos con scroll */
+.observation-types-container {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+/* Mejoras para cards y elementos visuales */
+.card {
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important;
+}
+
+/* Mejoras para secciones responsivas */
+@media (max-width: 767px) {
+    .timeline {
+        padding-left: 30px;
+    }
+    
+    .timeline-icon {
+        width: 18px;
+        height: 18px;
+        line-height: 18px;
+        font-size: 0.7rem;
+    }
+}
+</style>

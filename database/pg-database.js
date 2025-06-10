@@ -560,6 +560,146 @@ class PostgresDatabase {
         });
     }
 
+    getObservationStats() {
+        return new Promise(async (resolve, reject) => {
+            try {
+                // Obtener estadísticas de observaciones por tipo
+                const typeStatsQuery = await this.pool.query(`
+                    SELECT 
+                        jsonb_array_elements_text(observation_types) as type,
+                        COUNT(*) as count
+                    FROM 
+                        observations
+                    GROUP BY 
+                        jsonb_array_elements_text(observation_types)
+                    ORDER BY 
+                        count DESC
+                `);
+                
+                // Obtener estadísticas de observaciones por etiqueta
+                const tagStatsQuery = await this.pool.query(`
+                    SELECT 
+                        jsonb_array_elements_text(tags) as tag,
+                        COUNT(*) as count
+                    FROM 
+                        observations
+                    GROUP BY 
+                        jsonb_array_elements_text(tags)
+                    ORDER BY 
+                        count DESC
+                `);
+                
+                // Obtener estadísticas de seguimiento
+                const followupStatsQuery = await this.pool.query(`
+                    SELECT 
+                        requires_followup,
+                        COUNT(*) as count
+                    FROM 
+                        observations
+                    GROUP BY 
+                        requires_followup
+                `);
+                
+                // Observaciones por mes (últimos 6 meses)
+                const monthlyStatsQuery = await this.pool.query(`
+                    SELECT 
+                        date_trunc('month', observation_date) as month,
+                        COUNT(*) as count
+                    FROM 
+                        observations
+                    WHERE 
+                        observation_date >= NOW() - INTERVAL '6 months'
+                    GROUP BY 
+                        date_trunc('month', observation_date)
+                    ORDER BY 
+                        month ASC
+                `);
+                
+                // Formatear datos de respuesta
+                const stats = {
+                    typeStats: typeStatsQuery.rows,
+                    tagStats: tagStatsQuery.rows,
+                    followupStats: followupStatsQuery.rows.reduce((acc, row) => {
+                        acc[row.requires_followup ? 'pendientes' : 'completados'] = parseInt(row.count);
+                        return acc;
+                    }, { pendientes: 0, completados: 0 }),
+                    monthlyStats: monthlyStatsQuery.rows.map(row => ({
+                        month: row.month,
+                        count: parseInt(row.count)
+                    }))
+                };
+                
+                resolve(stats);
+            } catch (error) {
+                console.error('Error obteniendo estadísticas de observaciones:', error);
+                reject(error);
+            }
+        });
+    }
+    
+    getTopChildrenWithObservations(limit = 5) {
+        return new Promise(async (resolve, reject) => {
+            try {
+                const result = await this.pool.query(`
+                    SELECT 
+                        c.id, 
+                        c.name, 
+                        c.last_name, 
+                        c.group_name,
+                        COUNT(o.id) as observation_count
+                    FROM 
+                        children c
+                    JOIN 
+                        observations o ON c.id = o.child_id
+                    WHERE 
+                        c.active = TRUE
+                    GROUP BY 
+                        c.id, c.name, c.last_name, c.group_name
+                    ORDER BY 
+                        observation_count DESC
+                    LIMIT $1
+                `, [limit]);
+                
+                resolve(result.rows);
+            } catch (error) {
+                console.error('Error obteniendo niños con más observaciones:', error);
+                reject(error);
+            }
+        });
+    }
+    
+    getRecentActivity(daysAgo = 7) {
+        return new Promise(async (resolve, reject) => {
+            try {
+                const result = await this.pool.query(`
+                    SELECT 
+                        'observation' as type,
+                        o.id,
+                        o.created_at as date,
+                        u.name as user_name,
+                        c.name || ' ' || c.last_name as child_name,
+                        c.id as child_id,
+                        o.description as description
+                    FROM 
+                        observations o
+                    JOIN 
+                        users u ON o.observer_id = u.id
+                    JOIN 
+                        children c ON o.child_id = c.id
+                    WHERE 
+                        o.created_at >= NOW() - INTERVAL '${daysAgo} days'
+                    ORDER BY 
+                        o.created_at DESC
+                `);
+                
+                resolve(result.rows);
+            } catch (error) {
+                console.error('Error obteniendo actividad reciente:', error);
+                reject(error);
+            }
+        });
+    }
+
     async isHealthy() {
         if (!this.pool || !this.connected) {
             return false;
