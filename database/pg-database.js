@@ -280,6 +280,107 @@ class PostgresDatabase {
         });
     }
 
+    // Método para obtener usuario por ID
+    getUserById(id) {
+        return new Promise(async (resolve, reject) => {
+            try {
+                const result = await this.pool.query(
+                    "SELECT id, username, name, email, role, created_at FROM users WHERE id = $1",
+                    [id]
+                );
+                
+                resolve(result.rows.length > 0 ? result.rows[0] : null);
+            } catch (error) {
+                console.error('❌ [DB] Error obteniendo usuario por ID:', error);
+                reject(error);
+            }
+        });
+    }
+
+    // Método para obtener todas las observaciones de un usuario
+    getObservationsByUser(userId) {
+        return new Promise(async (resolve, reject) => {
+            try {
+                const result = await this.pool.query(
+                    `SELECT o.*, c.name as child_name, c.last_name as child_last_name
+                     FROM observations o
+                     JOIN children c ON o.child_id = c.id
+                     WHERE o.observer_id = $1
+                     ORDER BY o.created_at DESC`,
+                    [userId]
+                );
+                
+                resolve(result.rows);
+            } catch (error) {
+                console.error('❌ [DB] Error obteniendo observaciones por usuario:', error);
+                reject(error);
+            }
+        });
+    }
+
+    // Método para actualizar usuario
+    updateUser(userId, userData) {
+        return new Promise(async (resolve, reject) => {
+            try {
+                const fields = [];
+                const values = [];
+                let valueIndex = 1;
+
+                if (userData.name) {
+                    fields.push(`name = $${valueIndex++}`);
+                    values.push(userData.name);
+                }
+                if (userData.email !== undefined) {
+                    fields.push(`email = $${valueIndex++}`);
+                    values.push(userData.email);
+                }
+                if (userData.role) {
+                    fields.push(`role = $${valueIndex++}`);
+                    values.push(userData.role);
+                }
+                if (userData.password) {
+                    fields.push(`password = $${valueIndex++}`);
+                    values.push(userData.password);
+                }
+
+                if (fields.length === 0) {
+                    throw new Error('No hay campos para actualizar');
+                }
+
+                values.push(userId);
+
+                const query = `
+                    UPDATE users 
+                    SET ${fields.join(', ')}
+                    WHERE id = $${valueIndex}
+                    RETURNING id, username, name, email, role, created_at
+                `;
+
+                const result = await this.pool.query(query, values);
+                resolve(result.rows[0]);
+            } catch (error) {
+                console.error('❌ [DB] Error actualizando usuario:', error);
+                reject(error);
+            }
+        });
+    }
+
+    // Método para eliminar usuario
+    deleteUser(userId) {
+        return new Promise(async (resolve, reject) => {
+            try {
+                const result = await this.pool.query(
+                    'DELETE FROM users WHERE id = $1',
+                    [userId]
+                );
+                resolve(result.rowCount);
+            } catch (error) {
+                console.error('❌ [DB] Error eliminando usuario:', error);
+                reject(error);
+            }
+        });
+    }
+
     // Métodos para niños
     getAllChildren() {
         return new Promise(async (resolve, reject) => {

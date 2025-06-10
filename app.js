@@ -91,6 +91,7 @@ const authRoutes = require('./routes/auth');
 const dashboardRoutes = require('./routes/dashboard');
 const childrenRoutes = require('./routes/children');
 const observationsRoutes = require('./routes/observations');
+const adminRoutes = require('./routes/admin');
 
 // Inicializar la base de datos PostgreSQL
 const db = require('./database/pg-database');
@@ -112,6 +113,16 @@ const hbs = exphbs.create({
         },
         eq: function(a, b) {
             return a === b;
+        },
+        gt: function(a, b) {
+            return a > b;
+        },
+        unless: function(condition, options) {
+            if (!condition) {
+                return options.fn(this);
+            } else {
+                return options.inverse(this);
+            }
         },
         parseJSON: function(context) {
             try {
@@ -320,11 +331,12 @@ app.use((req, res, next) => {
     next();
 });
 
-// Rutas
+// Configurar rutas
 app.use('/auth', authRoutes);
 app.use('/dashboard', requireAuth, dashboardRoutes);
 app.use('/children', requireAuth, childrenRoutes);
 app.use('/observations', requireAuth, observationsRoutes);
+app.use('/admin', requireAuth, adminRoutes);
 
 // Ruta principal
 app.get('/', (req, res) => {

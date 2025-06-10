@@ -1,0 +1,137 @@
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2><i class="bi bi-person-circle"></i> {{title}}</h2>
+                <div>
+                    {{#unless (eq user.id currentUser.id)}}
+                    <a href="/admin/users/{{user.id}}/edit" class="btn btn-warning me-2">
+                        <i class="bi bi-pencil"></i> Editar
+                    </a>
+                    {{/unless}}
+                    <a href="/admin/users" class="btn btn-secondary">
+                        <i class="bi bi-arrow-left"></i> Volver
+                    </a>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Información del usuario -->
+                <div class="col-lg-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="bi bi-info-circle"></i> Información del Usuario</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Nombre de Usuario:</label>
+                                <p class="mb-1">{{user.username}}</p>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Nombre Completo:</label>
+                                <p class="mb-1">{{user.name}}</p>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Email:</label>
+                                <p class="mb-1">
+                                    {{#if user.email}}
+                                    {{user.email}}
+                                    {{else}}
+                                    <span class="text-muted">No especificado</span>
+                                    {{/if}}
+                                </p>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Rol:</label>
+                                <p class="mb-1">
+                                    {{#if (eq user.role 'admin')}}
+                                    <span class="badge bg-danger">Administrador</span>
+                                    {{else}}
+                                    <span class="badge bg-secondary">Maestro</span>
+                                    {{/if}}
+                                </p>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">Fecha de Creación:</label>
+                                <p class="mb-1">{{user.createdAt}}</p>
+                            </div>
+
+                            <div class="mb-0">
+                                <label class="form-label fw-bold">Total de Observaciones:</label>
+                                <p class="mb-0">
+                                    <span class="badge bg-primary fs-6">{{user.totalObservations}}</span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actividad reciente -->
+                <div class="col-lg-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0"><i class="bi bi-clock-history"></i> Actividad Reciente</h5>
+                        </div>
+                        <div class="card-body">
+                            {{#if observations.length}}
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Fecha</th>
+                                            <th>Niño</th>
+                                            <th>Tipos</th>
+                                            <th>Descripción</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {{#each observations}}
+                                        <tr>
+                                            <td>{{formatDate observation_date}}</td>
+                                            <td>
+                                                {{#if child_name}}
+                                                {{child_name}} {{child_last_name}}
+                                                {{else}}
+                                                <span class="text-muted">Niño eliminado</span>
+                                                {{/if}}
+                                            </td>
+                                            <td>
+                                                {{#each (parseJSON observation_types)}}
+                                                <span class="badge bg-info me-1">{{this}}</span>
+                                                {{/each}}
+                                            </td>
+                                            <td>
+                                                <div class="text-truncate" style="max-width: 200px;" title="{{description}}">
+                                                    {{description}}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {{/each}}
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            {{#if (gt user.totalObservations 10)}}
+                            <div class="text-center mt-3">
+                                <a href="/observations?observer={{user.id}}" class="btn btn-outline-primary">
+                                    Ver todas las observaciones ({{user.totalObservations}})
+                                </a>
+                            </div>
+                            {{/if}}
+                            {{else}}
+                            <div class="text-center py-4">
+                                <i class="bi bi-clipboard-x text-muted" style="font-size: 3rem;"></i>
+                                <p class="text-muted mt-2">Este usuario no ha registrado observaciones aún</p>
+                            </div>
+                            {{/if}}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

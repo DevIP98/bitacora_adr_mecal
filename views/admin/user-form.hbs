@@ -1,0 +1,147 @@
+<div class="container-fluid py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">
+                        <i class="bi bi-person{{#unless isEdit}}-plus{{/unless}}"></i> 
+                        {{title}}
+                    </h4>
+                </div>
+                <div class="card-body">
+                    {{#if error}}
+                    <div class="alert alert-danger">
+                        <i class="bi bi-exclamation-triangle"></i> {{error}}
+                    </div>
+                    {{/if}}
+
+                    <form method="POST" action="{{#if isEdit}}/admin/users/{{user.id}}{{else}}/admin/users{{/if}}">
+                        {{#if isEdit}}
+                        <input type="hidden" name="_method" value="PUT">
+                        {{/if}}
+                        
+                        <div class="mb-3">
+                            <label for="username" class="form-label">
+                                Nombre de Usuario <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="username" 
+                                   name="username" 
+                                   value="{{user.username}}"
+                                   {{#if isEdit}}disabled{{/if}}
+                                   required>
+                            {{#if isEdit}}
+                            <div class="form-text">El nombre de usuario no se puede cambiar</div>
+                            {{/if}}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="name" class="form-label">
+                                Nombre Completo <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="name" 
+                                   name="name" 
+                                   value="{{user.name}}"
+                                   required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" 
+                                   class="form-control" 
+                                   id="email" 
+                                   name="email" 
+                                   value="{{user.email}}">
+                            <div class="form-text">Opcional</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="role" class="form-label">
+                                Rol <span class="text-danger">*</span>
+                            </label>
+                            <select class="form-select" id="role" name="role" required>
+                                <option value="">Seleccionar rol...</option>
+                                <option value="teacher" {{#if (eq user.role 'teacher')}}selected{{/if}}>
+                                    Maestro
+                                </option>
+                                <option value="admin" {{#if (eq user.role 'admin')}}selected{{/if}}>
+                                    Administrador
+                                </option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="password" class="form-label">
+                                {{#if isEdit}}Nueva Contraseña{{else}}Contraseña <span class="text-danger">*</span>{{/if}}
+                            </label>
+                            <div class="input-group">
+                                <input type="password" 
+                                       class="form-control" 
+                                       id="password" 
+                                       name="password" 
+                                       {{#unless isEdit}}required{{/unless}}
+                                       minlength="6">
+                                <button class="btn btn-outline-secondary" type="button" onclick="togglePassword()">
+                                    <i class="bi bi-eye" id="toggleIcon"></i>
+                                </button>
+                            </div>
+                            <div class="form-text">
+                                {{#if isEdit}}
+                                Dejar en blanco para mantener la contraseña actual
+                                {{else}}
+                                Mínimo 6 caracteres
+                                {{/if}}
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <a href="/admin/users" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left"></i> Volver
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-check-lg"></i> 
+                                {{#if isEdit}}Actualizar{{else}}Crear{{/if}} Usuario
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function togglePassword() {
+    const passwordInput = document.getElementById('password');
+    const toggleIcon = document.getElementById('toggleIcon');
+    
+    if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        toggleIcon.className = 'bi bi-eye-slash';
+    } else {
+        passwordInput.type = 'password';
+        toggleIcon.className = 'bi bi-eye';
+    }
+}
+
+// Validación del formulario
+document.querySelector('form').addEventListener('submit', function(e) {
+    const password = document.getElementById('password').value;
+    const isEdit = {{#if isEdit}}true{{else}}false{{/if}};
+    
+    if (!isEdit && (!password || password.length < 6)) {
+        e.preventDefault();
+        alert('La contraseña debe tener al menos 6 caracteres');
+        return;
+    }
+    
+    if (isEdit && password && password.length < 6) {
+        e.preventDefault();
+        alert('Si especificas una nueva contraseña, debe tener al menos 6 caracteres');
+        return;
+    }
+});
+</script>

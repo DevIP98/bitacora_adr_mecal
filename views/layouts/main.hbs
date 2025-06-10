@@ -47,6 +47,13 @@
                             <i class="bi bi-plus-circle"></i> Nueva Observación
                         </a>
                     </li>
+                    {{#if (eq user.role 'admin')}}
+                    <li class="nav-item">
+                        <a class="nav-link" href="/admin/users">
+                            <i class="bi bi-people-fill"></i> Usuarios
+                        </a>
+                    </li>
+                    {{/if}}
                 </ul>
                 
                 <ul class="navbar-nav">
