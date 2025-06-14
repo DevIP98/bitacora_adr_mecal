@@ -104,15 +104,99 @@ router.get('/', async (req, res) => {
     try {
         const observations = await db.getRecentObservations(50); // Últimas 50 observaciones
         
+        // Verificar si el usuario es administrador
+        const isAdmin = req.session.user && req.session.user.role === 'admin';
+        
         res.render('observations/index', {
             title: 'Observaciones - Bitácora ADR',
-            observations
+            observations,
+            isAdmin,
+            success: req.query.success
         });
     } catch (error) {
         console.error('Error al obtener observaciones:', error);
         res.render('observations/index', {
             title: 'Observaciones - Bitácora ADR',
             error: 'Error al cargar las observaciones'
+        });
+    }
+});
+
+// Middleware para verificar que sea administrador
+function requireAdmin(req, res, next) {
+    if (!req.session.user || req.session.user.role !== 'admin') {
+        return res.status(403).render('error', { 
+            message: 'Acceso denegado. Solo administradores pueden eliminar observaciones.',
+            layout: 'main'
+        });
+    }
+    next();
+}
+
+// Ruta para eliminar una observación (solo admin)
+router.get('/delete/:id', requireAdmin, async (req, res) => {
+    try {
+        const observationId = req.params.id;
+        
+        // Obtener información de la observación antes de eliminarla
+        const observation = await db.getObservationById(observationId);
+        if (!observation) {
+            return res.status(404).render('error', {
+                message: 'La observación no fue encontrada',
+                layout: 'main'
+            });
+        }
+        
+        // Guardar el ID del niño para redireccionar después
+        const childId = observation.child_id;
+        
+        // Verificar de dónde vino la solicitud para redireccionar apropiadamente
+        const referer = req.headers.referer || '';
+        
+        // Eliminar la observación
+        await db.deleteObservation(observationId);
+        
+        // Decidir a dónde redireccionar basado en la URL de referencia
+        if (referer.includes('/observations')) {
+            // Si viene de la página de observaciones, volver ahí
+            res.redirect('/observations?success=Observación eliminada correctamente');
+        } else {
+            // Por defecto, ir al perfil del niño
+            res.redirect(`/children/${childId}?success=Observación eliminada correctamente`);
+        }
+    } catch (error) {
+        console.error('Error al eliminar observación:', error);
+        res.status(500).render('error', {
+            message: 'Error al eliminar la observación',
+            layout: 'main'
+        });
+    }
+});
+
+// Confirmación de eliminación de observación (solo admin)
+router.get('/confirm-delete/:id', requireAdmin, async (req, res) => {
+    try {
+        const observationId = req.params.id;
+        const observation = await db.getObservationById(observationId);
+        
+        if (!observation) {
+            return res.status(404).render('error', {
+                message: 'La observación no fue encontrada',
+                layout: 'main'
+            });
+        }
+        
+        // Renderizar página de confirmación
+        res.render('observations/confirm-delete', {
+            title: 'Confirmar Eliminación - Bitácora ADR',
+            observation,
+            layout: 'main'
+        });
+    } catch (error) {
+        console.error('Error al preparar eliminación:', error);
+        res.status(500).render('error', {
+            message: 'Error al preparar la eliminación de la observación',
+            layout: 'main'
         });
     }
 });

@@ -746,6 +746,43 @@ class PostgresDatabase {
                 .catch(err => console.error('❌ [DATABASE] Error cerrando pool:', err));
         }
     }
+
+    // Obtener una observación por ID
+    getObservationById(observationId) {
+        return new Promise(async (resolve, reject) => {
+            try {
+                const result = await this.pool.query(`
+                    SELECT o.*, 
+                           c.name as child_name, 
+                           c.last_name as child_last_name,
+                           u.name as observer_name
+                    FROM observations o
+                    JOIN children c ON o.child_id = c.id
+                    JOIN users u ON o.observer_id = u.id
+                    WHERE o.id = $1
+                `, [observationId]);
+                
+                if (result.rows.length === 0) {
+                    resolve(null);
+                } else {
+                    const observation = result.rows[0];
+                    
+                    // Convertir de JSON string a array
+                    if (observation.observation_types) {
+                        observation.observation_types = JSON.parse(observation.observation_types);
+                    }
+                    if (observation.tags) {
+                        observation.tags = JSON.parse(observation.tags);
+                    }
+                    
+                    resolve(observation);
+                }
+            } catch (error) {
+                console.error('❌ [DB] Error al obtener observación por ID:', error);
+                reject(error);
+            }
+        });
+    }
 }
 
 const database = new PostgresDatabase();

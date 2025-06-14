@@ -70,11 +70,15 @@ router.get('/:id', async (req, res) => {
         }
 
         const observations = await db.getObservationsByChild(childId);
+          // Verificar si el usuario es administrador
+        const isAdmin = req.session.user && req.session.user.role === 'admin';
         
         res.render('children/detail', {
             title: `${child.name} ${child.last_name} - Bitácora ADR`,
             child,
-            observations
+            observations,
+            isAdmin, // Pasar la información de si es admin a la vista
+            success: req.query.success // Para mostrar mensajes de éxito después de eliminar
         });
     } catch (error) {
         console.error('Error al obtener detalles del niño:', error);
