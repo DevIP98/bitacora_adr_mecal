@@ -745,8 +745,28 @@ class PostgresDatabase {
                 .then(() => console.log('✅ [DATABASE] Pool de conexiones cerrado'))
                 .catch(err => console.error('❌ [DATABASE] Error cerrando pool:', err));
         }
+    }    // Eliminar una observación por ID
+    deleteObservation(observationId) {
+        return new Promise(async (resolve, reject) => {
+            try {
+                const result = await this.pool.query(
+                    "DELETE FROM observations WHERE id = $1 RETURNING id",
+                    [observationId]
+                );
+                
+                if (result.rows.length === 0) {
+                    reject(new Error('Observación no encontrada'));
+                } else {
+                    console.log(`✅ [DB] Observación eliminada con éxito: ${observationId}`);
+                    resolve(result.rows[0]);
+                }
+            } catch (error) {
+                console.error('❌ [DB] Error al eliminar observación:', error);
+                reject(error);
+            }
+        });
     }
-
+    
     // Obtener una observación por ID
     getObservationById(observationId) {
         return new Promise(async (resolve, reject) => {
